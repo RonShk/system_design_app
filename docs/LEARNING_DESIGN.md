@@ -24,7 +24,7 @@ three levels of support:
 |---|---|---|---|---|
 | 1 | Practice testing (retrieving from memory) substantially beats rereading. Recall-style tests work better than recognition. | Strong | D-AFT "Practice testing"; D-PSPI summary; RP-FAQ | Every lesson is followed by retrieval practice. At least 40% of all items are free-recall, explanation, calculation, ordering, or design; multiple choice is never the only evidence for a concept (enforced by the content validator and by the mastery rules). |
 | 2 | Distributed practice gives longer retention than massed practice for the same total time. | Strong | D-AFT "Distributed practice"; SG pp. 3–7 | Concepts are re-tested on later days by a spaced scheduler. The app does not let a same-day success count as retention. |
-| 3 | No specific spacing interval is optimal: "any spacing is better than no spacing, and exactly how much time should occur between learning sessions is less critical"; equal vs. non-equal gaps make little difference. | Strong (as a *negative* result) | SG p. 10 FAQ | The interval ladder (1, 3, 7, 14, 30, 60, 120 days) is a **design choice** picked for practicality: short first gaps to catch early forgetting, longer gaps to keep daily load low. It is documented as such and is a single constant in `src/domain/scheduler.ts`. |
+| 3 | No specific spacing interval is optimal: "any spacing is better than no spacing, and exactly how much time should occur between learning sessions is less critical"; equal vs. non-equal gaps make little difference. | Strong (as a *negative* result) | SG p. 10 FAQ | The interval ladder (1, 3, 7, 14, 30, 60, 120 days) is a **design choice** picked for practicality: short first gaps to catch early forgetting, longer gaps to keep daily load low. It is documented as such and is a single constant in `ios/TrainerCore/Sources/TrainerCore/Scheduler.swift`. |
 | 4 | Retrieval should be effortful ("desirable difficulty"); spacing works *because* some forgetting occurs. | Strong | SG p. 5; RP-FAQ | Reviews are scheduled so material is no longer fresh. Reviewing early (before half the interval has elapsed) is allowed but does not advance the schedule. |
 | 5 | Feedback after an attempt improves learning, and elaborated feedback (with explanation) is more powerful; retrieval without feedback still helps. | Strong | RP-FAQ "feedback"; SG p. 11 | The answer and an explanation are shown only after a committed attempt. Every item must have an explanation and a source reference (validator-enforced). |
 | 6 | Retrieval practice is a learning strategy, not an assessment; keep it low-stakes. | Strong | RP-FAQ | Practice and assessment are separate modes with separate item pools. Practice never blocks progress and is not scored as a grade. |
@@ -68,7 +68,7 @@ three levels of support:
 Assessment-pool results count toward Demonstrated/Retained; practice results count toward
 Practiced/Demonstrated, and toward Retained only when the gap rule is met.
 
-## Scheduler (design choice, see `src/domain/scheduler.ts`)
+## Scheduler (design choice, see `ios/TrainerCore/Sources/TrainerCore/Scheduler.swift`)
 
 - Scheduling is per **concept**, not per question, so repeated reviews use different
   questions and wording cannot be memorised.

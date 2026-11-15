@@ -27,3 +27,19 @@ jobs:
       - uses: actions/checkout@v4
       - run: swift test
         working-directory: ios/TrainerCore
+
+  app:
+    name: iOS app build and simulator UI tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pick an available iPhone simulator
+        id: sim
+        run: |
+          id=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for r in sorted(d, reverse=True) if 'iOS' in r for x in d[r] if x['name'].startswith('iPhone')))")
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+      - name: Build and run UI tests
+        working-directory: ios
+        run: |
+          xcodebuild test -project SystemDesignTrainer.xcodeproj -scheme SystemDesignTrainer \
+            -destination "platform=iOS Simulator,id=${{ steps.sim.outputs.id }}" CODE_SIGNING_ALLOWED=NO
