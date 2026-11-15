@@ -10,7 +10,7 @@ struct LearnView: View {
             List {
                 Section("Curriculum") {
                     ForEach(model.catalog.modules) { m in
-                        NavigationLink(value: m) { moduleRow(m) }
+                        NavigationLink(value: m) { moduleRow(m) }.accessibilityIdentifier("module-\(m.id)")
                     }
                 }
                 Section {
@@ -85,7 +85,7 @@ struct ModuleView: View {
             Section { Text(module.summary).font(.subheadline).foregroundStyle(.secondary) }
             Section("Lessons") {
                 ForEach(model.catalog.lessons(in: module.id)) { l in
-                    NavigationLink(value: l) { LessonRow(lesson: l) }
+                    NavigationLink(value: l) { LessonRow(lesson: l) }.accessibilityIdentifier("lesson-\(l.id)")
                 }
             }
         }

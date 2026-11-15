@@ -28,7 +28,7 @@ struct StatsView: View {
         let s = Mastery.summary(of: model.catalog.orderedConcepts, statuses: model.statuses)
         return Card {
             Text("\(s.total) concepts").font(.title2.weight(.bold))
-            HStack(spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
                 big("\(pct(s.covered, s.total))", "Coverage", "Concepts at least introduced")
                 big("\(pct(s.demonstrated, s.total))", "Demonstrated", "Answered on your own, varied questions")
                 big("\(pct(s.retained, s.total))", "Retained", "Still known after a week or more")
