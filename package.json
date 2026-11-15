@@ -7,7 +7,7 @@
   "scripts": {
     "content": "node scripts/build-content.mjs",
     "content:strict": "node scripts/build-content.mjs --strict --report",
-    "test": "node --test tests/content/"
+    "test": "node --test tests/content/*.test.mjs"
   },
   "devDependencies": {
     "js-yaml": "^4.1.0",
