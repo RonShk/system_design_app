@@ -13,6 +13,9 @@ public struct CheckResult: Equatable, Sendable {
     public var outcome: Outcome
     public var score: Double
     public var grading: Grading
+    public init(outcome: Outcome, score: Double, grading: Grading) {
+        self.outcome = outcome; self.score = score; self.grading = grading
+    }
 }
 
 public enum Checker {

@@ -34,7 +34,7 @@ public enum ReviewReason: String, Sendable {
     case misconception = "Confident answer was wrong"
 }
 
-public enum Progress {
+public enum Mastery {
     /// Days that must separate two retrievals before a success counts as retention.
     public static let retentionGapDays = 7
 

@@ -1,65 +1,43 @@
-# Delivery decision: installable web app on GitHub Pages
+# Delivery: native iOS app (SwiftUI)
 
-Decided 2026-11-14 after inspecting the development machine and the platform rules.
+## Decision history
 
-## What was checked
+- **2026-11-14, first decision:** installable web app (PWA) with Web Push sent by a
+  scheduled GitHub Actions workflow. The reasons were that no code-signing identity was
+  installed and that a free-signed native build expires after 7 days.
+- **2026-11-14, superseded by the owner:** build it as a native app, because local
+  notifications are simpler and more reliable than a push server, and remind daily at
+  about 3 pm. The PWA work was never merged; nothing from it ships.
 
-| Question | Finding | How it was checked |
+## What was built
+
+| Concern | How |
+|---|---|
+| App | SwiftUI, iOS 17+, iPhone only, portrait. Xcode project `ios/SystemDesignTrainer.xcodeproj`. |
+| Rules | `ios/TrainerCore`: a Swift package with no UI dependencies (scheduler, progress, checking, sessions, assessments, persistence, backup). Tested with `swift test` on macOS. |
+| Content | Compiled from `content/` by `npm run content` into JSON under `ios/SystemDesignTrainer/Resources/content/` and bundled in the app. |
+| Offline | Everything is in the app bundle. No network calls; the only links that leave the app are source citations. |
+| Progress | JSON file in the app's Application Support directory, with the previous good copy kept as a backup. Survives app updates; removed if the app is deleted. Versioned migrations; validated export and import. |
+| Reminders | One repeating `UNCalendarNotificationTrigger` at 15:00 local time by default (changeable in Settings). It is a local notification, so iOS delivers it with the app closed and with no server or network. |
+| Cost | None, with a free Apple ID (see the expiry limit below). |
+
+## Installing on an iPhone
+
+Signing needs an Apple ID in Xcode. There are two options:
+
+| Option | Cost | What it means |
 |---|---|---|
-| Can a native app be signed for long-term use? | No code-signing identity is installed on this Mac. Without the paid Apple Developer Program ($99/year), a free Apple ID signs builds that expire after 7 days and must be reinstalled from a Mac. | `security find-identity -v -p codesigning` → 0 identities; Apple's free-provisioning rules |
-| Can a web app be installed on iPhone? | Yes. A site with a manifest whose `display` is `standalone` becomes a Home Screen web app. | WebKit, "Web Push for Web Apps on iOS and iPadOS" — https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/ |
-| Can it notify while closed? | Yes, through standard Web Push (Push API + Notifications API + service worker) for Home Screen web apps on iOS 16.4+. Permission must be requested from a tap. No Apple Developer membership is needed. | Same WebKit post |
-| Can a web app schedule a *local* notification with no server? | No. The Notification Triggers API was a Chrome experiment and is not in Safari. A push has to be sent by something on the network. | https://web.dev/notification-triggers ; Apple Developer Forums thread 735402 |
-| Free hosting? | GitHub Pages is free for public repositories and this repository is public. | `gh repo view` |
-| Something to send the push without a laptop or paid backend? | A scheduled GitHub Actions workflow can send Web Push directly to Apple's push service. Free for public repositories. | GitHub Actions documentation |
+| Free Apple ID ("Personal Team") | $0 | Install from Xcode over USB or Wi-Fi. **The install expires after 7 days**: the app stops opening until you run it from Xcode again. Your progress is kept, because reinstalling over the top keeps app data. |
+| Apple Developer Program | $99/year | Builds last a year, and TestFlight lets you install without a cable. No code changes are needed. |
 
-## Decision
+The step-by-step instructions are in the README.
 
-1. **App**: a static, installable PWA (Vite + React + TypeScript) served from GitHub Pages.
-   All lessons and questions are precached by the service worker at install, so the app
-   works offline. Progress is stored in IndexedDB on the phone.
-2. **Reminders**: Web Push. `.github/workflows/reminders.yml` runs every 15 minutes, reads
-   the reminder configuration, and sends a push when the preferred local time has passed
-   and no reminder was sent yet that local day.
-3. **No backend, no accounts, no paid services.**
+## Known limits
 
-Rejected: a native SwiftUI/Capacitor app. It would give true local notifications, but with
-no paid developer account it would stop launching every 7 days, which fails "reliable
-installation and daily use" and "do not depend on my laptop". The domain logic is plain
-TypeScript with no browser dependencies, so wrapping it natively later remains possible.
-
-## How reminder configuration reaches the workflow
-
-The repository is public, so the push subscription must not be committed or logged.
-It is stored in a GitHub Actions **repository variable** (`REMINDER_CONFIG`), which is
-readable only by people with access to the repository settings, not by the public.
-
-Two ways to set it:
-
-- **From the app (recommended)**: paste a fine-grained personal access token limited to
-  this one repository with *Variables: read and write* and *Actions: read and write*.
-  The app then writes the variable itself whenever reminders are enabled, disabled, or
-  the time or time zone changes, and can trigger a real test push.
-- **Manual**: the app shows the configuration JSON to copy into
-  *Settings → Secrets and variables → Actions → Variables → `REMINDER_CONFIG`*.
-
-The token is stored only on the phone (IndexedDB) and is sent only to `api.github.com`.
-
-## Known limits (operating system and platform)
-
-- GitHub's scheduler is best-effort; runs can start several minutes late. A reminder
-  arrives at the preferred time or up to roughly 15–30 minutes after it, not to the minute.
-- GitHub disables scheduled workflows in a public repository after 60 days without
-  repository activity. Each run calls the "enable workflow" API to keep the schedule
-  alive, and any push to the repository also resets the timer. This keep-alive has not
-  been observed over a 60-day period here; if reminders ever stop, re-enable the workflow
-  under the repository's *Actions* tab.
-- iOS only delivers Web Push to web apps opened from the Home Screen icon, and the
-  permission prompt only appears after a tap inside the installed app.
-- iOS may revoke a push subscription if pushes arrive without showing a notification; the
-  service worker always shows one.
-- Deleting the Home Screen icon deletes the app's local data. Export progress first
-  (Settings → Export).
-- Verification in this project was done in desktop Chrome at phone dimensions. Install,
-  push delivery, and offline behaviour on a physical iPhone are listed as device-only
-  checks in [PROGRESS.md](PROGRESS.md).
+- With free signing, the 7-day re-sign is the biggest day-to-day cost. Reinstalling takes
+  about a minute with the phone connected, and progress survives it.
+- Deleting the app deletes its data. Export from Settings first.
+- Notifications need permission, which the app asks for during onboarding. If you decline,
+  Settings shows the status and links to iOS Settings.
+- Verification so far has been in the iOS Simulator (iPhone 17 Pro, iOS 26.2). Real-device
+  checks are listed in [PROGRESS.md](PROGRESS.md).

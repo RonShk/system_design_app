@@ -1,0 +1,1795 @@
+# Curriculum plan: the contract between lesson authors.
+# Ids are permanent once shipped. Overall order = module order in modules.yaml, then `order`.
+# Every prereq appears earlier in that overall order. Every source ref exists in content/sources/*.yaml.
+# Sections were checked against the live source on 2026-11-14 (see docs/SOURCES.md).
+# Authors: cite these sections at minimum; add more only after opening and checking them.
+
+lessons:
+  # ───────────────────────────── FOUNDATIONS ─────────────────────────────
+  - id: fnd-requirements
+    module: foundations
+    order: 1
+    file: 01-requirements.md
+    title: Clarifying requirements and constraints
+    prereqs: []
+    concepts:
+      - { id: fnd-requirements-clarification, name: "Requirements clarification" }
+      - { id: fnd-design-constraints, name: "Design constraints and scope" }
+    covers: "How to turn a vague prompt into a scoped problem: identify users and use cases, ask about scale, data size, read/write mix, latency, consistency and budget, and write down what is out of scope. Teaches that constraints (team size, existing systems, compliance, deadlines) eliminate designs before performance does, and that unasked questions become hidden assumptions. Leaves the functional/non-functional split to fnd-functional-nonfunctional and numeric estimation to fnd-capacity-estimation."
+    sources:
+      - { ref: primer, section: "How to approach a system design interview question — Step 1: Outline use cases, constraints, and assumptions", url: "https://github.com/donnemartin/system-design-primer#step-1-outline-use-cases-constraints-and-assumptions" }
+      - { ref: sre-workbook, section: "Ch. 12 Introducing Non-Abstract Large System Design — What Is NALSD?", url: "https://sre.google/workbook/non-abstract-design/" }
+      - { ref: sre-book, section: "Ch. 4 Service Level Objectives — What Do You and Your Users Care About?", url: "https://sre.google/sre-book/service-level-objectives/" }
+
+  - id: fnd-functional-nonfunctional
+    module: foundations
+    order: 2
+    file: 02-functional-nonfunctional.md
+    title: Functional and non-functional requirements
+    prereqs: [fnd-requirements]
+    concepts:
+      - { id: fnd-functional-vs-nonfunctional, name: "Functional vs non-functional requirements" }
+      - { id: fnd-measurable-quality-targets, name: "Measurable quality targets" }
+    covers: "Functional requirements say what the system does; non-functional ones (latency, throughput, availability, durability, consistency, security, cost, operability) say how well, and they drive architecture far more than features do. Teaches rewriting vague qualities ('fast', 'always up') as measurable targets with a percentile, a window and a scope, and spotting conflicting requirements (e.g. strong consistency vs low cross-region latency). Leaves percentiles to fnd-latency-percentiles and SLO mechanics to prd-slos-error-budgets."
+    sources:
+      - { ref: sre-book, section: "Ch. 4 Service Level Objectives — Indicators; Objectives", url: "https://sre.google/sre-book/service-level-objectives/" }
+      - { ref: primer, section: "Performance vs scalability; Latency vs throughput", url: "https://github.com/donnemartin/system-design-primer#performance-vs-scalability" }
+
+  - id: fnd-latency-percentiles
+    module: foundations
+    order: 3
+    file: 03-latency-percentiles.md
+    title: Latency distributions and percentiles
+    prereqs: []
+    concepts:
+      - { id: fnd-percentile-latency, name: "Latency percentiles" }
+      - { id: fnd-tail-amplification, name: "Tail amplification under fan-out" }
+    covers: "EXISTS. Right-skewed latency distributions, why the mean misleads, why percentiles cannot be averaged, and how fan-out turns backend tail latency into typical user latency."
+    sources:
+      - { ref: sre-book, section: "Ch. 4 Service Level Objectives — Indicators in Practice (Aggregation)", url: "https://sre.google/sre-book/service-level-objectives/" }
+      - { ref: sre-book, section: "Ch. 6 Monitoring Distributed Systems — Worrying About Your Tail", url: "https://sre.google/sre-book/monitoring-distributed-systems/" }
+      - { ref: tail-at-scale, section: "Why Variability Exists; Component-Level Variability Amplified By Scale" }
+
+  - id: fnd-throughput-concurrency
+    module: foundations
+    order: 4
+    file: 04-throughput-littles-law.md
+    title: Throughput, concurrency and Little's law
+    prereqs: [fnd-latency-percentiles]
+    concepts:
+      - { id: fnd-throughput-vs-latency, name: "Throughput vs latency" }
+      - { id: fnd-littles-law, name: "Little's law" }
+    covers: "Throughput (work per unit time) and latency (time per unit of work) are different axes; batching and pipelining can raise one while hurting the other. Teaches Little's law (in-flight = arrival rate × time in system) to size thread pools, connection pools and queues, and to see why rising latency at constant load raises concurrency and memory use. Leaves saturation and queueing collapse to fnd-bottlenecks-utilization."
+    sources:
+      - { ref: primer, section: "Latency vs throughput", url: "https://github.com/donnemartin/system-design-primer#latency-vs-throughput" }
+      - { ref: brooker-littles-law, section: "Telling Stories About Little's Law (whole post)" }
+      - { ref: aws-builders-library, section: "Avoiding insurmountable queue backlogs — Amazon's approach (Little's Law and concurrency)", url: "https://aws.amazon.com/builders-library/avoiding-insurmountable-queue-backlogs/" }
+
+  - id: fnd-bottlenecks-utilization
+    module: foundations
+    order: 5
+    file: 05-bottlenecks-utilization.md
+    title: Bottlenecks, utilization and saturation
+    prereqs: [fnd-throughput-concurrency]
+    concepts:
+      - { id: fnd-bottleneck-analysis, name: "Bottleneck analysis" }
+      - { id: fnd-utilization-saturation, name: "Utilization and saturation" }
+    covers: "A system's throughput is capped by its most constrained resource (CPU, memory, disk IOPS, network, locks, connection pools, a downstream dependency). Teaches the USE method (utilization, saturation, errors) per resource, why queueing delay rises steeply as utilization approaches 100 percent, and why average utilization hides short saturation bursts. Leaves overload protection to scl-backpressure and prd-load-shedding."
+    sources:
+      - { ref: use-method, section: "The USE Method (whole article)" }
+      - { ref: sre-book, section: "Ch. 22 Addressing Cascading Failures — Server Overload; Resource Exhaustion", url: "https://sre.google/sre-book/addressing-cascading-failures/" }
+
+  - id: fnd-hardware-costs
+    module: foundations
+    order: 6
+    file: 06-hardware-costs.md
+    title: "What operations cost: memory, storage and network"
+    prereqs: [fnd-latency-percentiles]
+    concepts:
+      - { id: fnd-latency-hierarchy, name: "The latency hierarchy" }
+      - { id: fnd-sequential-vs-random-io, name: "Sequential vs random access" }
+    covers: "Orders of magnitude for cache, RAM, SSD, spinning disk, same-datacenter round trip and cross-continent round trip, and why designs that touch the slow tier per request fail. Teaches why sequential access beats random access on every storage device (and why logs and LSM trees exploit this). Uses the numbers only as order-of-magnitude anchors and labels them as approximate; leaves device internals to fnd-storage-durability."
+    sources:
+      - { ref: primer, section: "Appendix — Latency numbers every programmer should know", url: "https://github.com/donnemartin/system-design-primer#latency-numbers-every-programmer-should-know" }
+      - { ref: cmu-15445, section: "Lecture 03 Database Storage I — §2 Access Time and Access Pattern", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/03-storage1.pdf" }
+      - { ref: ostep, section: "Ch. 37 Hard Disk Drives", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/file-disks.pdf" }
+
+  - id: fnd-capacity-estimation
+    module: foundations
+    order: 7
+    file: 07-capacity-estimation.md
+    title: Back-of-the-envelope capacity estimation
+    prereqs: [fnd-functional-nonfunctional, fnd-throughput-concurrency, fnd-hardware-costs]
+    concepts:
+      - { id: fnd-estimation-method, name: "Estimation method" }
+      - { id: fnd-explicit-assumptions, name: "Explicit assumptions" }
+    covers: "Estimating QPS (average and peak), storage growth, bandwidth and machine counts from users and behaviour, with powers of two and rounding. Teaches stating every assumption explicitly, carrying units, checking the estimate against a sanity bound, and identifying which assumption the answer is most sensitive to. Leaves cost in money to prd-cost."
+    sources:
+      - { ref: primer, section: "Back-of-the-envelope calculations; Appendix — Powers of two table", url: "https://github.com/donnemartin/system-design-primer#back-of-the-envelope-calculations" }
+      - { ref: sre-workbook, section: "Ch. 12 Introducing Non-Abstract Large System Design — AdWords Example", url: "https://sre.google/workbook/non-abstract-design/" }
+
+  - id: fnd-processes-threads
+    module: foundations
+    order: 8
+    file: 08-processes-threads.md
+    title: Processes, threads and context switches
+    prereqs: []
+    concepts:
+      - { id: fnd-process-vs-thread, name: "Processes vs threads" }
+      - { id: fnd-context-switch-cost, name: "Context switch cost" }
+    covers: "A process is an address space plus execution state; threads share the address space. Teaches limited direct execution, system calls and timer interrupts, what a context switch saves and why thousands of threads cost memory and scheduler time. Explains the isolation-vs-sharing tradeoff behind process-per-request, thread-per-request and worker models. Leaves locking to fnd-locks-condvars and event loops to fnd-io-models."
+    sources:
+      - { ref: ostep, section: "Ch. 4 The Abstraction: The Process", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/cpu-intro.pdf" }
+      - { ref: ostep, section: "Ch. 6 Mechanism: Limited Direct Execution", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/cpu-mechanisms.pdf" }
+      - { ref: ostep, section: "Ch. 26 Concurrency: An Introduction", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/threads-intro.pdf" }
+
+  - id: fnd-virtual-memory
+    module: foundations
+    order: 9
+    file: 09-virtual-memory.md
+    title: Virtual memory, paging and memory pressure
+    prereqs: [fnd-processes-threads]
+    concepts:
+      - { id: fnd-paging-translation, name: "Paging and address translation" }
+      - { id: fnd-memory-pressure, name: "Memory pressure and swapping" }
+    covers: "Address spaces, page tables, TLBs and page faults, and how the OS overcommits memory and swaps pages out. Teaches why a server that starts swapping falls off a latency cliff, why working-set size matters more than total data, and the OS page cache as an implicit cache for files. Leaves database buffer pools to dat-pages-buffer-pool."
+    sources:
+      - { ref: ostep, section: "Ch. 13 The Abstraction: Address Spaces", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-intro.pdf" }
+      - { ref: ostep, section: "Ch. 18 Paging: Introduction; Ch. 19 Paging: Faster Translations (TLBs)", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-paging.pdf" }
+      - { ref: ostep, section: "Ch. 21–22 Beyond Physical Memory: Mechanisms and Policies", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/vm-beyondphys.pdf" }
+
+  - id: fnd-locks-condvars
+    module: foundations
+    order: 10
+    file: 10-locks-condvars.md
+    title: "Shared state: races, locks and condition variables"
+    prereqs: [fnd-processes-threads]
+    concepts:
+      - { id: fnd-race-condition, name: "Race conditions" }
+      - { id: fnd-lock-condvar, name: "Locks and condition variables" }
+    covers: "Why unsynchronised read-modify-write loses updates, what a critical section is, how mutexes provide mutual exclusion and how condition variables let threads wait for a state change (always re-check the predicate in a loop). Covers the producer/consumer bounded buffer as the canonical example and coarse vs fine-grained locking of data structures. Leaves deadlock and contention to fnd-concurrency-bugs."
+    sources:
+      - { ref: ostep, section: "Ch. 28 Locks", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/threads-locks.pdf" }
+      - { ref: ostep, section: "Ch. 29 Lock-based Concurrent Data Structures", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/threads-locks-usage.pdf" }
+      - { ref: ostep, section: "Ch. 30 Condition Variables", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/threads-cv.pdf" }
+
+  - id: fnd-concurrency-bugs
+    module: foundations
+    order: 11
+    file: 11-concurrency-bugs.md
+    title: Deadlocks, contention and concurrency bugs
+    prereqs: [fnd-locks-condvars]
+    concepts:
+      - { id: fnd-deadlock-conditions, name: "Deadlock conditions" }
+      - { id: fnd-lock-contention, name: "Lock contention" }
+    covers: "The four conditions for deadlock and how lock ordering, try-lock with back-off or avoiding hold-and-wait break them; atomicity-violation and order-violation bugs. Teaches lock contention as a throughput bottleneck (adding threads makes things slower) and how sharding a lock or reducing critical-section length helps. Leaves database lock managers to dat-two-phase-locking."
+    sources:
+      - { ref: ostep, section: "Ch. 32 Common Concurrency Problems", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/threads-bugs.pdf" }
+      - { ref: ostep, section: "Ch. 29 Lock-based Concurrent Data Structures (scalable counting)", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/threads-locks-usage.pdf" }
+
+  - id: fnd-storage-durability
+    module: foundations
+    order: 12
+    file: 12-storage-durability.md
+    title: Disks, SSDs and durable writes
+    prereqs: [fnd-hardware-costs]
+    concepts:
+      - { id: fnd-storage-device-behaviour, name: "Storage device behaviour" }
+      - { id: fnd-fsync-durability, name: "fsync and durability" }
+    covers: "How HDD seek/rotation and SSD erase blocks, flash translation layers and write amplification shape performance. Teaches that write() returning means the data is in the page cache, not on stable storage; what fsync guarantees, its cost, and why crash consistency needs journaling or ordered writes. Leaves database WAL to dat-write-ahead-log."
+    sources:
+      - { ref: ostep, section: "Ch. 44 Flash-based SSDs", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/file-ssd.pdf" }
+      - { ref: ostep, section: "Ch. 42 Crash Consistency: FSCK and Journaling", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/file-journaling.pdf" }
+      - { ref: linux-man-pages, section: "fsync(2)", url: "https://man7.org/linux/man-pages/man2/fsync.2.html" }
+
+  - id: fnd-io-models
+    module: foundations
+    order: 13
+    file: 13-io-models.md
+    title: Blocking, non-blocking and event-driven I/O
+    prereqs: [fnd-processes-threads, fnd-locks-condvars]
+    concepts:
+      - { id: fnd-io-concurrency-models, name: "I/O concurrency models" }
+      - { id: fnd-event-loop, name: "Event loops and readiness notification" }
+    covers: "Thread-per-connection blocking I/O vs non-blocking sockets with readiness notification (poll/epoll), level- vs edge-triggered events, and the event-loop structure used by Redis, nginx and Node. Teaches why one slow handler blocks the whole loop and how thread pools offload blocking work. Leaves the implementation to lab-kv-server and lab-thread-pool."
+    sources:
+      - { ref: byo-redis, section: "05. Concurrent IO Models", url: "https://build-your-own.org/redis/05_event_loop_intro.html" }
+      - { ref: byo-redis, section: "06. Event Loop", url: "https://build-your-own.org/redis/06_event_loop_impl.html" }
+      - { ref: linux-man-pages, section: "epoll(7) — Level-triggered and edge-triggered", url: "https://man7.org/linux/man-pages/man7/epoll.7.html" }
+
+  - id: fnd-dns
+    module: foundations
+    order: 14
+    file: 14-dns.md
+    title: "DNS: names, resolution and caching"
+    prereqs: []
+    concepts:
+      - { id: fnd-dns-resolution, name: "DNS resolution" }
+      - { id: fnd-dns-caching-ttl, name: "DNS caching and TTLs" }
+    covers: "The DNS hierarchy, authoritative vs recursive resolvers, iterative resolution and the record types a backend engineer meets (A/AAAA, CNAME, NS). Teaches TTL-driven caching at every layer, why DNS changes are not instant (and clients that ignore TTLs), and DNS as a coarse traffic-steering tool. Leaves DNS-based load balancing to scl-load-balancers."
+    sources:
+      - { ref: rfc1034, section: "§2.4 Elements of the DNS; §5 RESOLVERS", url: "https://www.rfc-editor.org/rfc/rfc1034.html" }
+      - { ref: systems-approach, section: "9.3.1 Name Service (DNS) — Domain Hierarchy; Name Servers; Name Resolution", url: "https://book.systemsapproach.org/applications/infrastructure.html" }
+      - { ref: primer, section: "Domain name system", url: "https://github.com/donnemartin/system-design-primer#domain-name-system" }
+
+  - id: fnd-tcp-udp
+    module: foundations
+    order: 15
+    file: 15-tcp-udp.md
+    title: TCP and UDP
+    prereqs: [fnd-hardware-costs]
+    concepts:
+      - { id: fnd-tcp-reliable-stream, name: "TCP reliable byte stream" }
+      - { id: fnd-udp-datagrams, name: "UDP datagrams" }
+    covers: "UDP as port demultiplexing with no reliability; TCP as a connection-oriented, ordered, reliable byte stream: three-way handshake, sequence numbers, acknowledgements and retransmission, connection teardown and TIME-WAIT. Teaches that TCP is a stream with no message boundaries (so applications need framing), and the latency cost of connection setup. Leaves flow and congestion control to fnd-flow-congestion."
+    sources:
+      - { ref: systems-approach, section: "5.1 Simple Demultiplexor (UDP); 5.2 Reliable Byte Stream (TCP)", url: "https://book.systemsapproach.org/e2e/tcp.html" }
+      - { ref: rfc9293, section: "§3.5 Establishing a Connection; §3.6 Closing a Connection", url: "https://www.rfc-editor.org/rfc/rfc9293.html" }
+
+  - id: fnd-flow-congestion
+    module: foundations
+    order: 16
+    file: 16-flow-congestion.md
+    title: Flow control, congestion control and bandwidth-delay
+    prereqs: [fnd-tcp-udp]
+    concepts:
+      - { id: fnd-bandwidth-delay-product, name: "Bandwidth-delay product" }
+      - { id: fnd-flow-vs-congestion-control, name: "Flow control vs congestion control" }
+    covers: "Latency vs bandwidth, the delay × bandwidth product as the amount of data in flight, the sliding window as receiver-driven flow control, and AIMD/slow start as sender-side congestion control. Teaches why short transfers over long paths are latency-bound, why a new connection starts slow, and flow control as the original backpressure mechanism. Leaves application backpressure to scl-backpressure."
+    sources:
+      - { ref: systems-approach, section: "1.5.1 Bandwidth and Latency; 1.5.2 Delay × Bandwidth Product", url: "https://book.systemsapproach.org/foundation/performance.html" }
+      - { ref: systems-approach, section: "5.2.4 Sliding Window Revisited — Flow Control", url: "https://book.systemsapproach.org/e2e/tcp.html" }
+      - { ref: systems-approach, section: "6.3.1 Additive Increase/Multiplicative Decrease; 6.3.2 Slow Start", url: "https://book.systemsapproach.org/congestion/tcpcc.html" }
+
+  - id: fnd-http
+    module: foundations
+    order: 17
+    file: 17-http.md
+    title: HTTP semantics
+    prereqs: [fnd-tcp-udp]
+    concepts:
+      - { id: fnd-http-methods-status, name: "HTTP methods and status codes" }
+      - { id: fnd-safe-idempotent-methods, name: "Safe and idempotent methods" }
+    covers: "HTTP as request/response over a connection: methods, status-code classes, headers, conditional requests (ETag/If-Match) and Retry-After. Teaches which methods are safe and idempotent and why that decides whether intermediaries and clients may retry automatically. Leaves caching headers to scl-cdn, connection management to fnd-connection-reuse and API shape to fnd-api-design."
+    sources:
+      - { ref: rfc9110, section: "§9.2.1 Safe Methods; §9.2.2 Idempotent Methods; §13 Conditional Requests", url: "https://www.rfc-editor.org/rfc/rfc9110.html" }
+      - { ref: systems-approach, section: "9.1.2 World Wide Web (HTTP) — Request Messages; Response Messages", url: "https://book.systemsapproach.org/applications/traditional.html" }
+
+  - id: fnd-tls
+    module: foundations
+    order: 18
+    file: 18-tls.md
+    title: "TLS: encryption and authentication in transit"
+    prereqs: [fnd-tcp-udp]
+    concepts:
+      - { id: fnd-tls-handshake, name: "The TLS handshake" }
+      - { id: fnd-certificate-authentication, name: "Certificate-based server authentication" }
+    covers: "What TLS provides (confidentiality, integrity, server and optionally client authentication), the TLS 1.3 handshake and its round-trip cost, certificates and chains of trust, session resumption and the replay risk of 0-RTT data. Teaches where TLS terminates in a typical architecture and what that implies for internal traffic. Leaves secrets and key storage to prd-secrets-encryption."
+    sources:
+      - { ref: rfc8446, section: "§2 Protocol Overview; §2.2 Resumption and Pre-Shared Key (PSK); §2.3 0-RTT Data", url: "https://www.rfc-editor.org/rfc/rfc8446.html" }
+      - { ref: systems-approach, section: "8.5.3 Transport Layer Security (TLS, SSL, HTTPS)", url: "https://book.systemsapproach.org/security/systems.html" }
+
+  - id: fnd-connection-reuse
+    module: foundations
+    order: 19
+    file: 19-connection-reuse.md
+    title: Connection reuse, HTTP/2 and HTTP/3
+    prereqs: [fnd-http, fnd-tls, fnd-flow-congestion]
+    concepts:
+      - { id: fnd-connection-pooling, name: "Connection reuse and pooling" }
+      - { id: fnd-head-of-line-blocking, name: "Head-of-line blocking" }
+    covers: "Why opening a connection per request is expensive (TCP + TLS handshakes, slow start), persistent connections and client-side pools, and pool sizing. Teaches HTTP/2 stream multiplexing over one TCP connection, the TCP-level head-of-line blocking it still suffers, and how QUIC/HTTP/3 move streams into UDP with per-stream loss recovery and connection migration. Leaves long-lived push connections to scl-websockets."
+    sources:
+      - { ref: rfc9112, section: "§9.3 Persistence; §9.3.2 Pipelining", url: "https://www.rfc-editor.org/rfc/rfc9112.html" }
+      - { ref: rfc9113, section: "§5 Streams and Multiplexing", url: "https://www.rfc-editor.org/rfc/rfc9113.html" }
+      - { ref: rfc9000, section: "§2 Streams; §9 Connection Migration", url: "https://www.rfc-editor.org/rfc/rfc9000.html" }
+
+  - id: fnd-rpc
+    module: foundations
+    order: 20
+    file: 20-rpc.md
+    title: Remote procedure calls
+    prereqs: [fnd-tcp-udp, fnd-http]
+    concepts:
+      - { id: fnd-rpc-model, name: "The RPC model" }
+      - { id: fnd-rpc-failure-semantics, name: "RPC failure semantics" }
+    covers: "Stubs, marshalling, request identifiers and the illusion of a local call; unary vs streaming RPC (gRPC). Teaches why a remote call differs from a local one: it can time out with unknown outcome, so at-most-once vs at-least-once semantics must be chosen deliberately, and deadlines must be explicit. Leaves wire formats to fnd-serialization and idempotency keys to dst-idempotency."
+    sources:
+      - { ref: kleppmann-ds, section: "1.3 Example: Remote Procedure Calls (RPC)" }
+      - { ref: systems-approach, section: "5.3.1 RPC Fundamentals (at-most-once semantics); 5.3.2 RPC Implementations — gRPC", url: "https://book.systemsapproach.org/e2e/rpc.html" }
+      - { ref: grpc-docs, section: "Core concepts — RPC life cycle; Deadlines/Timeouts; Cancelling an RPC", url: "https://grpc.io/docs/what-is-grpc/core-concepts/" }
+
+  - id: fnd-serialization
+    module: foundations
+    order: 21
+    file: 21-serialization.md
+    title: Serialization and schema evolution
+    prereqs: [fnd-rpc]
+    concepts:
+      - { id: fnd-serialization-formats, name: "Serialization formats" }
+      - { id: fnd-schema-compatibility, name: "Forward and backward schema compatibility" }
+    covers: "Text (JSON) vs binary tagged formats (Protocol Buffers): self-description, size, parse cost, varints and field tags. Teaches forward and backward compatibility: adding optional fields, never reusing field numbers, unknown-field handling, and why rolling deploys require both directions. Leaves HTTP API versioning to fnd-api-evolution and data migrations to prd-compatible-change."
+    sources:
+      - { ref: systems-approach, section: "7.1 Presentation Formatting — 7.1.1 Taxonomy; 7.1.2 Examples (ProtoBufs)", url: "https://book.systemsapproach.org/data/presentation.html" }
+      - { ref: protobuf-docs, section: "Encoding — Base 128 Varints; Message Structure", url: "https://protobuf.dev/programming-guides/encoding/" }
+      - { ref: protobuf-docs, section: "Language Guide (proto3) — Updating A Message Type; Unknown Fields", url: "https://protobuf.dev/programming-guides/proto3/" }
+
+  - id: fnd-api-design
+    module: foundations
+    order: 22
+    file: 22-api-design.md
+    title: "API design: resources, errors and pagination"
+    prereqs: [fnd-http, fnd-serialization]
+    concepts:
+      - { id: fnd-resource-oriented-api, name: "Resource-oriented API design" }
+      - { id: fnd-cursor-pagination, name: "Cursor-based pagination" }
+    covers: "Modelling an API as resources with standard methods, designing error responses clients can act on, and choosing between REST-style and RPC-style interfaces. Teaches pagination of large collections: why offset pagination is slow and unstable under inserts, opaque page tokens/cursors, page-size limits and consistency of a paginated scan. Leaves versioning to fnd-api-evolution and idempotent creates to dst-idempotency."
+    sources:
+      - { ref: google-aip, section: "AIP-121 Resource-oriented design", url: "https://google.aip.dev/121" }
+      - { ref: google-aip, section: "AIP-158 Pagination", url: "https://google.aip.dev/158" }
+      - { ref: google-aip, section: "AIP-193 Errors", url: "https://google.aip.dev/193" }
+
+  - id: fnd-api-evolution
+    module: foundations
+    order: 23
+    file: 23-api-evolution.md
+    title: API evolution and versioning
+    prereqs: [fnd-api-design]
+    concepts:
+      - { id: fnd-backward-compatibility, name: "Backward-compatible API change" }
+      - { id: fnd-api-versioning, name: "API versioning strategies" }
+    covers: "Which API changes break clients (removing or renaming fields, changing types or defaults, tightening validation) and which do not; behavioural compatibility beyond the schema. Teaches major-version strategies, deprecation windows and the cost of supporting old versions. Leaves deploy-time mixed-version safety to prd-compatible-change."
+    sources:
+      - { ref: google-aip, section: "AIP-180 Backwards compatibility", url: "https://google.aip.dev/180" }
+      - { ref: google-aip, section: "AIP-185 API Versioning", url: "https://google.aip.dev/185" }
+
+  # ───────────────────────────── DATA SYSTEMS ─────────────────────────────
+  - id: dat-relational-model
+    module: data
+    order: 1
+    file: 01-relational-model.md
+    title: The relational model and schema design
+    prereqs: [fnd-requirements]
+    concepts:
+      - { id: dat-relational-schema, name: "Relational schema design" }
+      - { id: dat-normalization, name: "Normalization and denormalization" }
+    covers: "Relations, keys, foreign keys and constraints as the way the database enforces invariants; data independence. Teaches normalization to remove update anomalies and deliberate denormalization for read performance, with the consistency cost it brings. Leaves query syntax to dat-sql and NoSQL modelling to dat-nosql-families."
+    sources:
+      - { ref: cmu-15445, section: "Lecture 01 Relational Model & Algebra — §4 Relational Model; §6 Relational Algebra", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/01-relationalmodel.pdf" }
+      - { ref: primer, section: "Database — Relational database management system (RDBMS); Denormalization", url: "https://github.com/donnemartin/system-design-primer#relational-database-management-system-rdbms" }
+
+  - id: dat-sql
+    module: data
+    order: 2
+    file: 02-sql.md
+    title: "SQL: joins, aggregates and query shape"
+    prereqs: [dat-relational-model]
+    concepts:
+      - { id: dat-sql-query-shape, name: "Joins, aggregates and set-based queries" }
+    covers: "Declarative set-based queries: joins, GROUP BY and aggregates, nested queries, window functions and CTEs, and how to express 'top N per group' or 'latest row per key'. Teaches thinking in sets rather than loops and why issuing one query per row from application code (N+1) is slow. Leaves how the engine executes queries to dat-query-execution."
+    sources:
+      - { ref: cmu-15445, section: "Lecture 02 Modern SQL — §4 Aggregates; §9 Window Functions; §10 Nested Queries; §12 Common Table Expressions", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/02-modernsql.pdf" }
+
+  - id: dat-pages-buffer-pool
+    module: data
+    order: 3
+    file: 03-pages-buffer-pool.md
+    title: Pages, heap files and the buffer pool
+    prereqs: [dat-relational-model, fnd-storage-durability, fnd-virtual-memory]
+    concepts:
+      - { id: dat-slotted-pages, name: "Slotted pages and record ids" }
+      - { id: dat-buffer-pool, name: "The buffer pool" }
+    covers: "How a disk-oriented DBMS lays tables out as heap files of fixed-size pages with slotted layouts and record ids. Teaches the buffer pool: page table, pinning, dirty pages, replacement policies (LRU, clock) and why databases often bypass the OS page cache. Leaves index structures to dat-btree-indexes and log-structured storage to dat-lsm-trees."
+    sources:
+      - { ref: cmu-15445, section: "Lecture 03 Database Storage I — §7 Database Pages; §8 Database Heap; §9 Page Layout", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/03-storage1.pdf" }
+      - { ref: cmu-15445, section: "Lecture 04 Memory Management — §2 Buffer Pool; §4 Buffer Replacement Policies; §5 Disk I/O and OS Cache", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/04-bufferpool.pdf" }
+
+  - id: dat-btree-indexes
+    module: data
+    order: 4
+    file: 04-btree-indexes.md
+    title: B+tree indexes
+    prereqs: [dat-pages-buffer-pool]
+    concepts:
+      - { id: dat-btree-index, name: "B+tree index structure" }
+      - { id: dat-composite-covering-index, name: "Composite and covering indexes" }
+    covers: "B+tree structure (high fan-out, sorted leaves linked for range scans), lookups in O(log n) page reads, splits and merges on writes. Teaches composite-index column order (equality first, then range), covering/index-only scans, and the write and storage cost of every extra index. Leaves hash-partitioned storage to dat-partitioning and LSM alternatives to dat-lsm-trees."
+    sources:
+      - { ref: cmu-15445, section: "Lecture 08 Indexes & Filters I — §2 B+Tree; §3 B+Tree Design Choices", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/08-indexes1.pdf" }
+      - { ref: postgres-docs, section: "§11.3 Multicolumn Indexes", url: "https://www.postgresql.org/docs/current/indexes-multicolumn.html" }
+      - { ref: postgres-docs, section: "§11.9 Index-Only Scans and Covering Indexes", url: "https://www.postgresql.org/docs/current/indexes-index-only-scans.html" }
+
+  - id: dat-query-execution
+    module: data
+    order: 5
+    file: 05-query-execution.md
+    title: "Query execution: access paths and joins"
+    prereqs: [dat-sql, dat-btree-indexes]
+    concepts:
+      - { id: dat-access-paths, name: "Access paths: scans vs index lookups" }
+      - { id: dat-join-algorithms, name: "Join algorithms" }
+    covers: "Query plans as operator trees, the iterator (Volcano) processing model, sequential scan vs index scan and why an index is slower than a scan once selectivity is high. Teaches nested-loop, sort-merge and hash joins with their cost drivers and memory needs. Leaves plan selection to dat-query-planning."
+    sources:
+      - { ref: cmu-15445, section: "Lecture 13 Query Execution I — §1 Query Plan; §2 Processing Models; §3 Access Methods", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/13-queryexecution1.pdf" }
+      - { ref: cmu-15445, section: "Lecture 12 Joins — §3 Nested Loop Join; §4 Sort-Merge Join; §5 Hash Join", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/12-joins.pdf" }
+
+  - id: dat-query-planning
+    module: data
+    order: 6
+    file: 06-query-planning.md
+    title: Query planning and reading EXPLAIN
+    prereqs: [dat-query-execution]
+    concepts:
+      - { id: dat-cost-based-planning, name: "Cost-based query planning" }
+      - { id: dat-explain-analysis, name: "Reading EXPLAIN output" }
+    covers: "How an optimizer rewrites queries and picks plans using statistics and cardinality estimates, and why bad estimates (correlated columns, stale statistics) produce bad plans. Teaches reading EXPLAIN / EXPLAIN ANALYZE to find the expensive node, comparing estimated and actual rows, and fixing slow queries with indexes, rewrites or fresh statistics. Leaves concurrency to dat-transactions."
+    sources:
+      - { ref: cmu-15445, section: "Lecture 15 Query Planning & Optimization I — §5 Cost-Based Query Optimization; §6 Cost Estimations", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/15-optimization1.pdf" }
+      - { ref: cmu-15445, section: "Lecture 16 Query Planning & Optimization II — §2 Data Statistics", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/16-optimization2.pdf" }
+      - { ref: postgres-docs, section: "§14.1 Using EXPLAIN — EXPLAIN Basics; EXPLAIN ANALYZE; Caveats", url: "https://www.postgresql.org/docs/current/using-explain.html" }
+
+  - id: dat-column-storage
+    module: data
+    order: 7
+    file: 07-column-storage.md
+    title: Row stores, column stores and analytics
+    prereqs: [dat-pages-buffer-pool, dat-query-execution]
+    concepts:
+      - { id: dat-columnar-storage, name: "Columnar storage" }
+      - { id: dat-oltp-vs-olap, name: "OLTP vs OLAP workloads" }
+    covers: "OLTP (many small reads/writes of whole rows) vs OLAP (scans and aggregates over a few columns). Teaches the n-ary (row), decomposition (column) and hybrid storage models, columnar compression (run-length, dictionary, delta), and why analytics run on separate column stores fed from the OLTP database. Leaves ingestion pipelines to case-metrics-ingestion."
+    sources:
+      - { ref: cmu-15445, section: "Lecture 06 Storage Models & Compression — §1 Database Workloads; §2 Storage Models; §5 Columnar Compression", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/06-storage3.pdf" }
+
+  - id: dat-transactions
+    module: data
+    order: 8
+    file: 08-transactions.md
+    title: Transactions and ACID
+    prereqs: [dat-sql]
+    concepts:
+      - { id: dat-acid-properties, name: "ACID properties" }
+      - { id: dat-serializability, name: "Serializability" }
+    covers: "What atomicity, consistency, isolation and durability each promise and which component provides each one. Teaches schedules, conflicts and conflict serializability as the gold standard for isolation, and why 'consistency' in ACID means application invariants, not replica consistency. Leaves weaker isolation to dat-isolation-levels and mechanisms to dat-two-phase-locking, dat-mvcc and dat-write-ahead-log."
+    sources:
+      - { ref: cmu-15445, section: "Lecture 17 Concurrency Control Theory — §2 Transactions; §4–7 ACID", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/17-concurrencycontrol.pdf" }
+
+  - id: dat-isolation-levels
+    module: data
+    order: 9
+    file: 09-isolation-levels.md
+    title: Isolation levels and anomalies
+    prereqs: [dat-transactions]
+    concepts:
+      - { id: dat-isolation-anomalies, name: "Isolation anomalies" }
+      - { id: dat-write-skew, name: "Write skew" }
+    covers: "Dirty reads, non-repeatable reads, phantoms and lost updates, and which isolation level (read committed, repeatable read/snapshot, serializable) permits which. Teaches write skew under snapshot isolation (two transactions each read, then write disjoint rows, breaking an invariant) and the fixes: SELECT FOR UPDATE, constraints, or serializable isolation with retries. Leaves implementation to dat-two-phase-locking and dat-mvcc."
+    sources:
+      - { ref: postgres-docs, section: "§13.2 Transaction Isolation — Read Committed; Repeatable Read; Serializable", url: "https://www.postgresql.org/docs/current/transaction-iso.html" }
+      - { ref: berenson-isolation, section: "§2.2 ANSI SQL Isolation Levels; §3 Analyzing ANSI SQL Isolation Levels; §4.2 Snapshot Isolation" }
+
+  - id: dat-two-phase-locking
+    module: data
+    order: 10
+    file: 10-two-phase-locking.md
+    title: Locking and two-phase locking
+    prereqs: [dat-isolation-levels, fnd-concurrency-bugs]
+    concepts:
+      - { id: dat-two-phase-locking-protocol, name: "Two-phase locking" }
+      - { id: dat-lock-granularity-deadlock, name: "Lock granularity and deadlock handling" }
+    covers: "Shared/exclusive locks, the growing and shrinking phases of 2PL, strict 2PL and cascading aborts. Teaches deadlock detection vs prevention (wait-die, wound-wait), lock granularity and intention locks, and practical row/table locks (SELECT FOR UPDATE, DDL locks that block traffic). Leaves MVCC to dat-mvcc."
+    sources:
+      - { ref: cmu-15445, section: "Lecture 18 Two-Phase Locking — §2 Two-Phase Locking; §3 Deadlock Handling; §4 Lock Granularities", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/18-twophaselocking.pdf" }
+      - { ref: postgres-docs, section: "§13.3 Explicit Locking — Table-Level Locks; Row-Level Locks; Deadlocks", url: "https://www.postgresql.org/docs/current/explicit-locking.html" }
+
+  - id: dat-mvcc
+    module: data
+    order: 11
+    file: 11-mvcc.md
+    title: Multi-version concurrency control
+    prereqs: [dat-isolation-levels]
+    concepts:
+      - { id: dat-mvcc-snapshots, name: "MVCC snapshots and visibility" }
+      - { id: dat-version-garbage-collection, name: "Version garbage collection" }
+    covers: "Keeping multiple versions so readers never block writers: version chains, snapshot visibility by transaction id/timestamp, and first-writer-wins conflicts. Teaches the cost side: version storage, garbage collection (PostgreSQL VACUUM), bloat and why a long-running transaction stops cleanup. Leaves distributed snapshots to dst-two-phase-commit."
+    sources:
+      - { ref: cmu-15445, section: "Lecture 20 Multi-Version Concurrency Control — §1; §2 Version Storage; §3 Garbage Collection", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/20-multiversioning.pdf" }
+      - { ref: postgres-docs, section: "§13.1 Concurrency Control — Introduction", url: "https://www.postgresql.org/docs/current/mvcc-intro.html" }
+      - { ref: postgres-docs, section: "§24.1 Routine Vacuuming — Vacuuming Basics; Recovering Disk Space", url: "https://www.postgresql.org/docs/current/routine-vacuuming.html" }
+
+  - id: dat-write-ahead-log
+    module: data
+    order: 12
+    file: 12-write-ahead-log.md
+    title: Write-ahead logging
+    prereqs: [dat-transactions, dat-pages-buffer-pool, fnd-storage-durability]
+    concepts:
+      - { id: dat-wal-rule, name: "The write-ahead logging rule" }
+      - { id: dat-buffer-policies, name: "Steal/no-force buffer policies" }
+    covers: "Why updating pages in place on commit is slow and unsafe, and how a WAL makes commit a sequential append plus fsync. Teaches the WAL rule (log record durable before the page), steal/no-force policies, group commit, and physical vs logical logging. Leaves checkpoints and the recovery algorithm to dat-crash-recovery and replication of the log to dat-leader-replication."
+    sources:
+      - { ref: cmu-15445, section: "Lecture 21 Database Logging — §2 Buffer Pool Management Policies; §6 Write-Ahead Logging; §7 Logging Schemes", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/21-logging.pdf" }
+      - { ref: postgres-docs, section: "§28.3 Write-Ahead Logging (WAL)", url: "https://www.postgresql.org/docs/current/wal-intro.html" }
+
+  - id: dat-crash-recovery
+    module: data
+    order: 13
+    file: 13-crash-recovery.md
+    title: Checkpoints and crash recovery
+    prereqs: [dat-write-ahead-log]
+    concepts:
+      - { id: dat-checkpointing, name: "Checkpointing" }
+      - { id: dat-redo-undo-recovery, name: "Redo and undo recovery" }
+    covers: "What must happen after a crash: redo committed work whose pages were not flushed, undo uncommitted work whose pages were. Teaches LSNs, checkpoints to bound recovery time, the analysis/redo/undo phases of ARIES at intuition level, and torn writes/checksums. Leaves backups and point-in-time restore to prd-backup-recovery."
+    sources:
+      - { ref: cmu-15445, section: "Lecture 21 Database Logging — §8 Checkpoints", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/21-logging.pdf" }
+      - { ref: cmu-15445, section: "Lecture 22 Database Recovery — §2 WAL Records; §4 Checkpointing; §5 ARIES Recovery", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/22-recovery.pdf" }
+
+  - id: dat-lsm-trees
+    module: data
+    order: 14
+    file: 14-lsm-trees.md
+    title: LSM trees, compaction and Bloom filters
+    prereqs: [dat-btree-indexes, dat-write-ahead-log]
+    concepts:
+      - { id: dat-lsm-tree, name: "Log-structured merge trees" }
+      - { id: dat-bloom-filter, name: "Bloom filters" }
+    covers: "Memtable + WAL, immutable sorted runs (SSTables), levels and compaction; why LSM trees turn random writes into sequential ones. Teaches read, write and space amplification as the tradeoff against B+trees, tombstones for deletes, and Bloom filters (no false negatives, tunable false positives) to skip runs on reads. Leaves which databases use LSMs to dat-nosql-families."
+    sources:
+      - { ref: lsm-tree-paper, section: "§2 The Two Component LSM-Tree Algorithm; §3.2 Comparison of LSM-tree and B-tree I/O costs" }
+      - { ref: leveldb-docs, section: "impl.md — Level 0; Compactions; Recovery", url: "https://github.com/google/leveldb/blob/main/doc/impl.md" }
+      - { ref: cmu-15445, section: "Lecture 09 Indexes & Filters II — §2 Bloom filter; Lecture 05 Database Storage II — §3 Log-Structured Storage", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/09-indexes2.pdf" }
+
+  - id: dat-nosql-families
+    module: data
+    order: 15
+    file: 15-nosql-families.md
+    title: NoSQL data models and when to use them
+    prereqs: [dat-relational-model, dat-lsm-trees]
+    concepts:
+      - { id: dat-nosql-data-models, name: "NoSQL data model families" }
+      - { id: dat-access-pattern-design, name: "Access-pattern-driven data modelling" }
+    covers: "Key-value, document, wide-column and graph stores: what each data model makes easy and hard (joins, multi-key transactions, secondary indexes). Teaches designing keys and records around known access patterns, and judging 'SQL or NoSQL' on data shape, consistency needs and query flexibility rather than on scale slogans. Leaves replication and partitioning to dat-leader-replication and dat-partitioning."
+    sources:
+      - { ref: primer, section: "Database — NoSQL (Key-value store; Document store; Wide column store; Graph database); SQL or NoSQL", url: "https://github.com/donnemartin/system-design-primer#nosql" }
+      - { ref: bigtable-paper, section: "§2 Data Model" }
+      - { ref: dynamo-paper, section: "§4.1 System Interface" }
+
+  - id: dat-leader-replication
+    module: data
+    order: 16
+    file: 16-leader-replication.md
+    title: Leader-follower replication and replication lag
+    prereqs: [dat-write-ahead-log]
+    concepts:
+      - { id: dat-leader-follower, name: "Leader-follower replication" }
+      - { id: dat-replication-lag, name: "Replication lag" }
+    covers: "Shipping the leader's log to followers, synchronous vs asynchronous replication and the durability/latency tradeoff, read replicas, and failover promoting a follower. Teaches replication lag and the anomalies users see when reading from a lagging replica, and data loss on failover with async replication. Leaves consistency definitions to dst-consistency-models and split brain to dst-failure-detection."
+    sources:
+      - { ref: postgres-docs, section: "§26.2 Log-Shipping Standby Servers — §26.2.5 Streaming Replication", url: "https://www.postgresql.org/docs/current/warm-standby.html" }
+      - { ref: redis-docs, section: "Redis replication — How Redis replication works; Allow writes only with N attached replicas", url: "https://redis.io/docs/latest/operate/oss_and_stack/management/replication/" }
+      - { ref: primer, section: "Availability patterns — Replication (Master-slave and master-master)", url: "https://github.com/donnemartin/system-design-primer#master-slave-replication" }
+
+  - id: dat-leaderless-replication
+    module: data
+    order: 17
+    file: 17-leaderless-replication.md
+    title: Multi-leader and leaderless replication
+    prereqs: [dat-leader-replication]
+    concepts:
+      - { id: dat-multi-leader, name: "Multi-leader replication" }
+      - { id: dat-leaderless-repair, name: "Leaderless replication and repair" }
+    covers: "Accepting writes at several replicas (multi-datacenter, offline clients) and the write conflicts that result. Teaches Dynamo-style leaderless replication: preference lists, hinted handoff, read repair and Merkle-tree anti-entropy. Leaves quorum arithmetic to dst-quorums and conflict resolution (vector clocks, CRDTs) to dst-vector-clocks and dst-eventual-consistency."
+    sources:
+      - { ref: dynamo-paper, section: "§4.3 Replication; §4.6 Handling Failures: Hinted Handoff; §4.7 Handling permanent failures: Replica synchronization" }
+      - { ref: primer, section: "Database — Master-master replication", url: "https://github.com/donnemartin/system-design-primer#master-master-replication" }
+
+  - id: dat-partitioning
+    module: data
+    order: 18
+    file: 18-partitioning.md
+    title: "Partitioning: key ranges, hashes and secondary indexes"
+    prereqs: [dat-btree-indexes, dat-leader-replication]
+    concepts:
+      - { id: dat-range-vs-hash-partitioning, name: "Range vs hash partitioning" }
+      - { id: dat-global-vs-local-index, name: "Local vs global secondary indexes" }
+    covers: "Splitting data across nodes by key range (efficient range scans, risk of hot ranges) or by hash (even spread, no range scans), and choosing a partition key. Teaches local (per-partition, scatter-gather reads) vs global (partitioned by indexed term, asynchronous and eventually consistent) secondary indexes, and how sharding breaks cross-shard joins and transactions. Leaves the hash ring to dat-consistent-hashing and moving data to dat-rebalancing."
+    sources:
+      - { ref: cmu-15445, section: "Lecture 23 Distributed Database Systems I — §4 Partitioning Schemes", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/23-distributed1.pdf" }
+      - { ref: bigtable-paper, section: "§5.1 Tablet Location" }
+      - { ref: aws-dynamodb-guide, section: "Using Global Secondary Indexes in DynamoDB", url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GSI.html" }
+
+  - id: dat-consistent-hashing
+    module: data
+    order: 19
+    file: 19-consistent-hashing.md
+    title: Consistent hashing and virtual nodes
+    prereqs: [dat-partitioning]
+    concepts:
+      - { id: dat-consistent-hash-ring, name: "Consistent hashing" }
+      - { id: dat-virtual-nodes, name: "Virtual nodes" }
+    covers: "Why hash(key) mod N reshuffles almost every key when N changes, and how a hash ring moves only about 1/N of keys. Teaches virtual nodes to even out load and match heterogeneous capacity, and jump consistent hash as a compact alternative for numbered buckets. Leaves the operational process of moving data to dat-rebalancing and hot keys to dat-hot-keys."
+    sources:
+      - { ref: karger-consistent-hashing, section: "§ Consistent Hashing (definitions of balance, monotonicity, spread, load)" }
+      - { ref: dynamo-paper, section: "§4.2 Partitioning Algorithm" }
+      - { ref: jump-hash, section: "Abstract; Introduction (comparison with Karger et al.)" }
+
+  - id: dat-rebalancing
+    module: data
+    order: 20
+    file: 20-rebalancing.md
+    title: Rebalancing and request routing
+    prereqs: [dat-consistent-hashing]
+    concepts:
+      - { id: dat-rebalancing-strategies, name: "Rebalancing strategies" }
+      - { id: dat-request-routing, name: "Request routing to partitions" }
+    covers: "Fixed-many-partitions vs dynamic splitting vs ring-based rebalancing; moving data while serving traffic and throttling the move. Teaches how clients find a partition (routing tier, partition-aware client, metadata service such as Bigtable's tablet location hierarchy) and the stale-routing case. Leaves coordination services to dst-coordination-services."
+    sources:
+      - { ref: dynamo-paper, section: "§4.9 Adding/Removing Storage Nodes; §6.2 Ensuring Uniform Load distribution" }
+      - { ref: bigtable-paper, section: "§5.1 Tablet Location; §5.2 Tablet Assignment" }
+      - { ref: gfs-paper, section: "§4.3 Creation, Re-replication, Rebalancing" }
+
+  - id: dat-hot-keys
+    module: data
+    order: 21
+    file: 21-hot-keys.md
+    title: Hot keys and skew
+    prereqs: [dat-consistent-hashing]
+    concepts:
+      - { id: dat-hot-key-mitigation, name: "Hot key mitigation" }
+      - { id: dat-load-skew, name: "Load and data skew" }
+    covers: "Why even hashing does not prevent hot spots when one key (a celebrity, a viral item, a global counter) dominates traffic. Teaches detecting skew (per-partition metrics, top-k keys) and mitigations: key salting/write sharding with scatter-gather reads, read replicas or caching for hot reads, splitting counters, and request coalescing. Leaves cache stampedes to scl-cache-stampede."
+    sources:
+      - { ref: aws-dynamodb-guide, section: "Best practices for designing and using partition keys effectively", url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-design.html" }
+      - { ref: aws-dynamodb-guide, section: "Using write sharding to distribute workloads evenly", url: "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-sharding.html" }
+      - { ref: dynamo-paper, section: "§6.2 Ensuring Uniform Load distribution" }
+
+  - id: dat-object-storage
+    module: data
+    order: 22
+    file: 22-object-storage.md
+    title: Object storage
+    prereqs: [dat-partitioning, dat-leader-replication]
+    concepts:
+      - { id: dat-object-storage-model, name: "The object storage model" }
+      - { id: dat-blob-metadata-split, name: "Separating blobs from metadata" }
+    covers: "Buckets, keys and immutable objects with whole-object PUT/GET, multipart upload, presigned URLs and the consistency guarantees S3 provides today. Teaches why large blobs live in object storage while their metadata lives in a database, and how systems like GFS and Haystack separate a metadata service from bulk data servers. Leaves lifecycle and tiering to dat-data-lifecycle and CDN delivery to scl-cdn."
+    sources:
+      - { ref: aws-s3-guide, section: "What is Amazon S3? — How Amazon S3 works; Amazon S3 data consistency model", url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html" }
+      - { ref: aws-s3-guide, section: "Uploading and copying objects using multipart upload", url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpuoverview.html" }
+      - { ref: haystack-paper, section: "§2.2 NFS-based Design; §3.1 Overview" }
+
+  - id: dat-search-indexes
+    module: data
+    order: 23
+    file: 23-search-indexes.md
+    title: Inverted indexes and search engines
+    prereqs: [dat-lsm-trees, dat-partitioning]
+    concepts:
+      - { id: dat-inverted-index, name: "Inverted indexes" }
+      - { id: dat-near-real-time-search, name: "Segments and near-real-time search" }
+    covers: "Text analysis (tokenizing, normalizing) into terms, the term dictionary and postings lists, and why a B+tree on a text column cannot answer full-text queries. Teaches immutable segments, refresh vs commit and why newly indexed documents are visible only after a refresh (near real time), plus document-partitioned shards with scatter-gather queries. Leaves ranking and autocomplete design to case-search-autocomplete."
+    sources:
+      - { ref: lucene-docs, section: "Index file formats — Definitions; Inverted Indexing; Segments", url: "https://lucene.apache.org/core/10_3_0/core/org/apache/lucene/codecs/lucene103/package-summary.html" }
+      - { ref: elasticsearch-docs, section: "Near real-time search", url: "https://www.elastic.co/docs/manage-data/data-store/near-real-time-search" }
+      - { ref: cmu-15445, section: "Lecture 09 Indexes & Filters II — §5 Inverted Index", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/09-indexes2.pdf" }
+
+  - id: dat-data-lifecycle
+    module: data
+    order: 24
+    file: 24-data-lifecycle.md
+    title: "Data lifecycle: retention, tiering and deletion"
+    prereqs: [dat-object-storage]
+    concepts:
+      - { id: dat-retention-tiering, name: "Retention and storage tiering" }
+      - { id: dat-deletion-semantics, name: "Deletion semantics" }
+    covers: "Data has a lifecycle: hot, warm, cold, archived, deleted. Teaches storage classes and lifecycle rules that transition or expire objects, TTLs in databases, and the cost/latency tradeoff of colder tiers. Teaches deletion as a hard problem: soft delete vs hard delete, deletes that must propagate to replicas, caches, indexes and backups. Leaves backup policy to prd-backup-recovery."
+    sources:
+      - { ref: aws-s3-guide, section: "Managing the lifecycle of objects (Transition actions; Expiration actions)", url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lifecycle-mgmt.html" }
+      - { ref: aws-s3-guide, section: "Understanding and managing Amazon S3 storage classes", url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html" }
+      - { ref: sre-book, section: "Ch. 26 Data Integrity — Retention; First Layer: Soft Deletion", url: "https://sre.google/sre-book/data-integrity/" }
+
+  # ───────────────────────────── DISTRIBUTED CORRECTNESS ─────────────────────────────
+  - id: dst-partial-failure
+    module: distributed
+    order: 1
+    file: 01-partial-failure.md
+    title: Partial failure and unreliable networks
+    prereqs: [fnd-rpc]
+    concepts:
+      - { id: dst-partial-failure-model, name: "Partial failure" }
+      - { id: dst-timeout-ambiguity, name: "Timeout ambiguity" }
+    covers: "Why distributed systems differ from one machine: some parts fail while others keep working, and messages can be lost, delayed, duplicated or reordered. Teaches that a timeout cannot distinguish a crashed node, a slow node, a lost request and a lost reply, so the caller does not know whether the operation happened. Leaves formal system models to dst-system-models and remedies to dst-idempotency and prd-timeouts."
+    sources:
+      - { ref: kleppmann-ds, section: "1.1 About distributed systems; 1.2 Distributed systems and computer networking" }
+      - { ref: aws-builders-library, section: "Challenges with distributed systems — Messaging across a network; Handling failure", url: "https://aws.amazon.com/builders-library/challenges-with-distributed-systems/" }
+
+  - id: dst-system-models
+    module: distributed
+    order: 2
+    file: 02-system-models.md
+    title: "System models: two generals and Byzantine faults"
+    prereqs: [dst-partial-failure]
+    concepts:
+      - { id: dst-two-generals, name: "The two generals problem" }
+      - { id: dst-system-model-assumptions, name: "Network, node and timing assumptions" }
+    covers: "The two generals problem (no protocol over a lossy link guarantees common knowledge) and the Byzantine generals problem (nodes that lie). Teaches the standard model choices: reliable/fair-loss/arbitrary links; crash-stop/crash-recovery/Byzantine nodes; synchronous/partially synchronous/asynchronous timing; and that every algorithm's guarantees hold only under its stated model. Leaves failure detectors to dst-failure-detection."
+    sources:
+      - { ref: kleppmann-ds, section: "2.1 The two generals problem; 2.2 The Byzantine generals problem; 2.3 Describing nodes and network behaviour" }
+
+  - id: dst-failure-detection
+    module: distributed
+    order: 3
+    file: 03-failure-detection.md
+    title: Failure detection, failover and split brain
+    prereqs: [dst-system-models]
+    concepts:
+      - { id: dst-failure-detector, name: "Failure detectors" }
+      - { id: dst-split-brain, name: "Split brain" }
+    covers: "Availability as a fraction of time, redundancy and failover, and heartbeat/timeout failure detectors that are necessarily imperfect (perfect vs eventually perfect). Teaches how a false suspicion during automatic failover produces two leaders (split brain) and why preventing it needs a majority or fencing, not a smarter timeout. Leaves leases and fencing tokens to dst-leases-fencing and availability targets to prd-availability."
+    sources:
+      - { ref: kleppmann-ds, section: "2.4 Fault tolerance and high availability (failure detectors)" }
+      - { ref: sre-book, section: "Ch. 23 Managing Critical State — Case Study 1: The Split-Brain Problem; Case Study 2: Failover Requires Human Intervention", url: "https://sre.google/sre-book/managing-critical-state/" }
+
+  - id: dst-physical-clocks
+    module: distributed
+    order: 4
+    file: 04-physical-clocks.md
+    title: Physical clocks and synchronisation
+    prereqs: [dst-partial-failure]
+    concepts:
+      - { id: dst-clock-skew, name: "Clock skew and drift" }
+      - { id: dst-monotonic-clock, name: "Monotonic vs time-of-day clocks" }
+    covers: "Quartz drift, NTP synchronisation and its error, leap seconds and clocks jumping backwards. Teaches never using time-of-day clocks to measure durations or order events across machines, using monotonic clocks for timeouts, and last-write-wins data loss under skew. Mentions bounded-uncertainty clocks (Spanner TrueTime) as the exception that requires special hardware. Leaves logical ordering to dst-happens-before."
+    sources:
+      - { ref: kleppmann-ds, section: "3.1 Physical clocks; 3.2 Clock synchronisation and monotonic clocks" }
+      - { ref: spanner-paper, section: "§3 TrueTime" }
+
+  - id: dst-happens-before
+    module: distributed
+    order: 5
+    file: 05-happens-before.md
+    title: Causality, happens-before and Lamport clocks
+    prereqs: [dst-physical-clocks]
+    concepts:
+      - { id: dst-happens-before-relation, name: "The happens-before relation" }
+      - { id: dst-lamport-timestamps, name: "Lamport timestamps" }
+    covers: "Defining order from messages instead of wall time: happens-before, concurrent events and causality. Teaches Lamport clocks (increment on event, max+1 on receive), the guarantee they give (a → b implies L(a) < L(b)) and the one they do not (the converse), and using (timestamp, node id) for a total order. Leaves detecting concurrency to dst-vector-clocks."
+    sources:
+      - { ref: kleppmann-ds, section: "3.3 Causality and happens-before; 4.1 Logical time (Lamport clocks)" }
+      - { ref: lamport-clocks, section: "The Partial Ordering; Logical Clocks; Ordering the Events Totally" }
+
+  - id: dst-vector-clocks
+    module: distributed
+    order: 6
+    file: 06-vector-clocks.md
+    title: Vector clocks and concurrent updates
+    prereqs: [dst-happens-before]
+    concepts:
+      - { id: dst-vector-clock, name: "Vector clocks" }
+      - { id: dst-concurrent-update-detection, name: "Detecting concurrent updates" }
+    covers: "Vector clocks as one counter per node, their comparison rules, and how they detect that two updates are concurrent rather than ordered. Teaches how Dynamo-style stores keep sibling versions and hand them to the application to merge, and the cost (size grows with writers, pruning). Leaves merge strategies to dst-eventual-consistency."
+    sources:
+      - { ref: kleppmann-ds, section: "4.1 Logical time (vector clocks)" }
+      - { ref: dynamo-paper, section: "§4.4 Data Versioning" }
+
+  - id: dst-broadcast
+    module: distributed
+    order: 7
+    file: 07-broadcast.md
+    title: Broadcast protocols and delivery order
+    prereqs: [dst-vector-clocks]
+    concepts:
+      - { id: dst-broadcast-ordering, name: "FIFO, causal and total-order broadcast" }
+      - { id: dst-total-order-broadcast, name: "Total order broadcast" }
+    covers: "Reliable broadcast and the delivery-order hierarchy: FIFO, causal and total order, and what anomalies each prevents (e.g. a reply delivered before the message it answers). Teaches eager/gossip reliable broadcast and why total order broadcast is equivalent to consensus. Leaves using it for replication to dst-state-machine-replication."
+    sources:
+      - { ref: kleppmann-ds, section: "4.2 Delivery order in broadcast protocols; 4.3 Broadcast algorithms" }
+
+  - id: dst-consistency-models
+    module: distributed
+    order: 8
+    file: 08-consistency-models.md
+    title: Consistency models and what users see
+    prereqs: [dat-leader-replication, dst-happens-before]
+    concepts:
+      - { id: dst-consistency-hierarchy, name: "The consistency model hierarchy" }
+      - { id: dst-session-guarantees, name: "Session guarantees" }
+    covers: "Consistency models as promises about which histories are allowed, from strict serializability and linearizability down to causal and eventual consistency. Teaches the user-visible anomalies and session guarantees that prevent them: read-your-writes, monotonic reads, monotonic writes, writes-follow-reads; and techniques like routing a user to the leader after a write. Leaves linearizability details to dst-linearizability and convergence to dst-eventual-consistency."
+    sources:
+      - { ref: jepsen-consistency, section: "Consistency Models (map); Read Your Writes", url: "https://jepsen.io/consistency" }
+      - { ref: kleppmann-ds, section: "5.2 Quorums (read-after-write consistency)" }
+
+  - id: dst-linearizability
+    module: distributed
+    order: 9
+    file: 09-linearizability.md
+    title: Linearizability
+    prereqs: [dst-consistency-models]
+    concepts:
+      - { id: dst-linearizable-behaviour, name: "Linearizability" }
+      - { id: dst-linearizability-cost, name: "The cost of linearizability" }
+    covers: "Linearizability as 'behaves like a single copy, and every operation takes effect at one instant between its start and end'; checking a history; how it differs from serializability. Teaches where it is needed (locks, leader election, uniqueness constraints) and what it costs: coordination round trips and unavailability under partition. Leaves CAP to dst-cap and quorum-based implementations to dst-quorums."
+    sources:
+      - { ref: kleppmann-ds, section: "7.2 Linearizability" }
+      - { ref: herlihy-wing, section: "§2.2 Definition of Linearizability; §3.1 Locality" }
+      - { ref: kleppmann-cap-critique, section: "§4.1 Latency and availability; §4.2 How operation latency depends on network delay" }
+
+  - id: dst-eventual-consistency
+    module: distributed
+    order: 10
+    file: 10-eventual-consistency.md
+    title: Eventual consistency and conflict resolution
+    prereqs: [dst-consistency-models, dst-vector-clocks, dat-leaderless-replication]
+    concepts:
+      - { id: dst-strong-eventual-consistency, name: "Eventual and strong eventual consistency" }
+      - { id: dst-crdt, name: "CRDTs and merge functions" }
+    covers: "Eventual consistency (replicas converge once updates stop) vs strong eventual consistency (replicas that saw the same updates are in the same state). Teaches conflict-resolution strategies: last-writer-wins and its silent data loss, application merge of siblings, and CRDTs (counters, sets, registers) whose merge is commutative, associative and idempotent. Leaves collaborative editing algorithms beyond intuition out of scope."
+    sources:
+      - { ref: kleppmann-ds, section: "7.3 Eventual consistency; 8.1 Collaboration and conflict resolution" }
+      - { ref: dynamo-paper, section: "§4.4 Data Versioning (reconciliation)" }
+
+  - id: dst-cap
+    module: distributed
+    order: 11
+    file: 11-cap.md
+    title: "CAP precisely: assumptions and limits"
+    prereqs: [dst-linearizability, dst-eventual-consistency, dst-system-models]
+    concepts:
+      - { id: dst-cap-theorem, name: "The CAP theorem" }
+      - { id: dst-pacelc, name: "Latency-consistency tradeoff (PACELC)" }
+    covers: "What Gilbert and Lynch actually proved: with C = linearizability, A = every request to a non-failed node eventually gets a non-error response, and an asynchronous network that may drop messages, no system has all three during a partition. Teaches why 'pick 2 of 3' is misleading, why CAP says nothing when there is no partition, the latency-consistency tradeoff that applies all the time (PACELC), and partition recovery. Leaves quorum behaviour to dst-quorums."
+    sources:
+      - { ref: gilbert-lynch-cap, section: "§2 Formal Model; §3.1 Impossibility Result; §4.4 Weaker Consistency Conditions" }
+      - { ref: brewer-cap-12-years, section: "Managing partitions; CAP-latency connection", url: "https://www.infoq.com/articles/cap-twelve-years-later-how-the-rules-have-changed/" }
+      - { ref: abadi-pacelc, section: "CAP is for failures; Data replication (consistency vs latency); PACELC" }
+
+  - id: dst-quorums
+    module: distributed
+    order: 12
+    file: 12-quorums.md
+    title: Quorum reads and writes
+    prereqs: [dst-linearizability, dat-leaderless-replication]
+    concepts:
+      - { id: dst-quorum-overlap, name: "Quorum intersection (R + W > N)" }
+      - { id: dst-sloppy-quorum, name: "Sloppy quorums and their limits" }
+    covers: "Why R + W > N makes a read overlap the latest acknowledged write, how N, R, W trade latency, durability and availability, and read repair. Teaches the edge cases where quorums still return stale or non-linearizable results (concurrent writes, partial failed writes, sloppy quorums with hinted handoff). Leaves consensus to dst-consensus."
+    sources:
+      - { ref: kleppmann-ds, section: "5.2 Quorums" }
+      - { ref: dynamo-paper, section: "§4.5 Execution of get () and put () operations; §4.6 Handling Failures: Hinted Handoff (sloppy quorum)" }
+
+  - id: dst-state-machine-replication
+    module: distributed
+    order: 13
+    file: 13-state-machine-replication.md
+    title: State machine replication
+    prereqs: [dst-broadcast]
+    concepts:
+      - { id: dst-replicated-state-machine, name: "Replicated state machines" }
+      - { id: dst-chain-replication, name: "Primary-backup and chain replication" }
+    covers: "If every replica applies the same deterministic commands in the same order, replicas stay identical: total order broadcast as the replication primitive. Teaches the determinism requirement, primary-backup vs chain replication (writes at head, reads at tail) and their failure handling via a configuration master. Leaves agreeing on the order to dst-consensus and dst-raft."
+    sources:
+      - { ref: kleppmann-ds, section: "5.3 Replication using broadcast" }
+      - { ref: chain-replication-paper, section: "§3 Chain Replication Protocol; §4 Primary/Backup Protocols" }
+      - { ref: raft-paper, section: "§2 Replicated state machines" }
+
+  - id: dst-consensus
+    module: distributed
+    order: 14
+    file: 14-consensus.md
+    title: Consensus fundamentals
+    prereqs: [dst-state-machine-replication, dst-failure-detection]
+    concepts:
+      - { id: dst-consensus-properties, name: "Consensus safety and liveness" }
+      - { id: dst-paxos-intuition, name: "Majority quorums in Paxos" }
+    covers: "The consensus problem (agreement, validity, termination), why it needs partial synchrony to make progress (FLP at intuition level), and why majorities of 2f+1 nodes tolerate f crashes. Teaches the Paxos idea of proposal numbers and overlapping majorities preserving a chosen value, and where consensus is used in practice (configuration, leader election, locks). Leaves Raft mechanics to dst-raft."
+    sources:
+      - { ref: kleppmann-ds, section: "6.1 Introduction to consensus" }
+      - { ref: paxos-simple, section: "§2 The Consensus Algorithm — 2.1 The Problem; 2.2 Choosing a Value" }
+      - { ref: sre-book, section: "Ch. 23 Managing Critical State — Paxos Overview; Number of Replicas", url: "https://sre.google/sre-book/managing-critical-state/" }
+
+  - id: dst-raft
+    module: distributed
+    order: 15
+    file: 15-raft.md
+    title: "Raft: leader election and log replication"
+    prereqs: [dst-consensus]
+    concepts:
+      - { id: dst-raft-leader-election, name: "Raft leader election and terms" }
+      - { id: dst-raft-commit-rule, name: "Raft log replication and commitment" }
+    covers: "Terms, randomized election timeouts, the vote restriction (only up-to-date candidates win), AppendEntries with the log-matching consistency check, and commitment once a majority stores an entry from the current term. Teaches what happens when a leader crashes mid-replication and why a deposed leader cannot commit. Leaves snapshotting and membership changes as pointers and leaves leases to dst-leases-fencing."
+    sources:
+      - { ref: kleppmann-ds, section: "6.2 The Raft consensus algorithm" }
+      - { ref: raft-paper, section: "§5.2 Leader election; §5.3 Log replication; §5.4 Safety" }
+
+  - id: dst-leases-fencing
+    module: distributed
+    order: 16
+    file: 16-leases-fencing.md
+    title: Leader leases, locks and fencing tokens
+    prereqs: [dst-raft, dst-physical-clocks]
+    concepts:
+      - { id: dst-lease, name: "Leases" }
+      - { id: dst-fencing-token, name: "Fencing tokens" }
+    covers: "A lease is a lock with an expiry, so a crashed holder does not block forever; leader election for application leaders built on a lease. Teaches why a paused (GC, VM migration) holder can act after its lease expired, and fencing tokens/sequencers checked by the resource to reject stale holders. Covers why a lock service built on unsynchronised timing is unsafe for correctness. Leaves the services themselves to dst-coordination-services."
+    sources:
+      - { ref: aws-builders-library, section: "Leader election in distributed systems — What happens when the leader fails?; Best practices for leader election", url: "https://aws.amazon.com/builders-library/leader-election-in-distributed-systems/" }
+      - { ref: kleppmann-locking, section: "Making the lock safe with fencing", url: "https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html" }
+      - { ref: chubby-paper, section: "§2.4 Locks and sequencers" }
+
+  - id: dst-coordination-services
+    module: distributed
+    order: 17
+    file: 17-coordination-services.md
+    title: Coordination services
+    prereqs: [dst-leases-fencing]
+    concepts:
+      - { id: dst-coordination-service-use, name: "What coordination services are for" }
+      - { id: dst-ephemeral-watches, name: "Sessions, ephemeral nodes and watches" }
+    covers: "ZooKeeper/Chubby/etcd as small, consensus-replicated stores for configuration, membership, leader election and locks, not for bulk data. Teaches sessions and ephemeral nodes for liveness, watches for change notification, sequential nodes for locks without herd effects, and the ordering guarantees ZooKeeper does and does not give. Leaves service discovery usage to scl-service-discovery."
+    sources:
+      - { ref: zookeeper-paper, section: "§2.1 Service overview; §2.3 ZooKeeper guarantees; §2.4 Examples of primitives" }
+      - { ref: chubby-paper, section: "§2.1 Rationale; §2.8 Sessions and KeepAlives" }
+      - { ref: sre-book, section: "Ch. 23 Managing Critical State — Distributed Coordination and Locking Services", url: "https://sre.google/sre-book/managing-critical-state/" }
+
+  - id: dst-idempotency
+    module: distributed
+    order: 18
+    file: 18-idempotency.md
+    title: Retries, idempotency and deduplication
+    prereqs: [dst-partial-failure, fnd-http]
+    concepts:
+      - { id: dst-idempotency-key, name: "Idempotency keys" }
+      - { id: dst-dedup-window, name: "Deduplication and its window" }
+    covers: "Because a timed-out request may have succeeded, retries are only safe for idempotent operations. Teaches designing idempotent APIs with client-supplied request ids: storing the key with the result atomically, returning the original result on replay, rejecting reuse with different parameters, and how long keys are kept. Leaves broker-level delivery guarantees to dst-delivery-semantics and retry policy to prd-retries."
+    sources:
+      - { ref: kleppmann-ds, section: "5.1 Manipulating remote state (idempotence)" }
+      - { ref: aws-builders-library, section: "Making retries safe with idempotent APIs", url: "https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/" }
+      - { ref: stripe-idempotency, section: "API reference — Idempotent requests", url: "https://docs.stripe.com/api/idempotent_requests" }
+
+  - id: dst-delivery-semantics
+    module: distributed
+    order: 19
+    file: 19-delivery-semantics.md
+    title: "Delivery semantics: at-most-once, at-least-once, effectively-once"
+    prereqs: [dst-idempotency]
+    concepts:
+      - { id: dst-delivery-guarantees, name: "At-most-once vs at-least-once delivery" }
+      - { id: dst-effectively-once-processing, name: "Effectively-once processing" }
+    covers: "How the order of 'process' and 'acknowledge/commit offset' decides at-most-once vs at-least-once, and why exactly-once delivery over an unreliable network is impossible in general. Teaches what systems mean by exactly-once (idempotent producers, transactions that atomically write output and commit offsets, deduplication ids) and where the guarantee stops (external side effects). Leaves queue mechanics to scl-message-queues."
+    sources:
+      - { ref: kafka-docs, section: "Design — Message Delivery Semantics; Using Transactions", url: "https://kafka.apache.org/42/design/design/" }
+      - { ref: aws-sqs-guide, section: "Exactly-once processing in Amazon SQS", url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues-exactly-once-processing.html" }
+      - { ref: kleppmann-ds, section: "5.1 Manipulating remote state (at-least-once, at-most-once, exactly-once)" }
+
+  - id: dst-two-phase-commit
+    module: distributed
+    order: 20
+    file: 20-two-phase-commit.md
+    title: Atomic commit and two-phase commit
+    prereqs: [dat-transactions, dst-consensus]
+    concepts:
+      - { id: dst-atomic-commit, name: "Atomic commitment" }
+      - { id: dst-2pc-coordinator-failure, name: "2PC blocking on coordinator failure" }
+    covers: "Atomic commitment across shards or services: prepare/vote, commit/abort, and why a participant that voted yes must wait for the coordinator. Teaches the blocking problem, fault-tolerant commit by replicating the coordinator with consensus (as Spanner does with Paxos groups), and the latency and availability cost that pushes many systems to sagas. Contrasts atomic commit with consensus. Leaves sagas to dst-sagas."
+    sources:
+      - { ref: kleppmann-ds, section: "7.1 Two-phase commit; 8.2 Google's Spanner" }
+      - { ref: cmu-15445, section: "Lecture 24 Distributed Database Systems II — §2 Atomic Commit Protocols", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/24-distributed2.pdf" }
+
+  - id: dst-sagas
+    module: distributed
+    order: 21
+    file: 21-sagas.md
+    title: Sagas and compensating actions
+    prereqs: [dst-two-phase-commit, dst-idempotency]
+    concepts:
+      - { id: dst-saga-pattern, name: "Sagas" }
+      - { id: dst-compensation-design, name: "Designing compensating actions" }
+    covers: "A saga splits a long business transaction into local transactions, each with a compensating action that semantically undoes it. Teaches orchestration vs choreography, the loss of isolation (other transactions see intermediate states), pivot steps that cannot be compensated, and why each step and compensation must be idempotent and retryable. Leaves reliable event publication to dst-transactional-outbox."
+    sources:
+      - { ref: sagas-paper, section: "Abstract (TR-070-87): sagas and compensating transactions" }
+      - { ref: microservices-io, section: "Pattern: Saga (Choreography; Orchestration)", url: "https://microservices.io/patterns/data/saga.html" }
+
+  - id: dst-transactional-outbox
+    module: distributed
+    order: 22
+    file: 22-transactional-outbox.md
+    title: Dual writes and the transactional outbox
+    prereqs: [dst-delivery-semantics, dst-sagas]
+    concepts:
+      - { id: dst-dual-write-problem, name: "The dual-write problem" }
+      - { id: dst-outbox-relay, name: "Transactional outbox and message relay" }
+    covers: "Writing to a database and publishing to a broker as two separate steps loses or invents events when either fails. Teaches the outbox: write the event row in the same local transaction as the state change, then relay it (polling or change data capture) with at-least-once delivery and consumer deduplication. Covers ordering per aggregate and outbox cleanup. Leaves broker internals to scl-log-brokers."
+    sources:
+      - { ref: microservices-io, section: "Pattern: Transactional outbox (Message relay)", url: "https://microservices.io/patterns/data/transactional-outbox.html" }
+      - { ref: debezium-docs, section: "Outbox Event Router", url: "https://debezium.io/documentation/reference/stable/transformations/outbox-event-router.html" }
+
+  # ───────────────────────────── SCALING AND COMMUNICATION ─────────────────────────────
+  - id: scl-scaling-strategies
+    module: scaling
+    order: 1
+    file: 01-scaling-strategies.md
+    title: Vertical and horizontal scaling
+    prereqs: [fnd-bottlenecks-utilization, fnd-capacity-estimation]
+    concepts:
+      - { id: scl-vertical-vs-horizontal, name: "Vertical vs horizontal scaling" }
+      - { id: scl-stateless-tier, name: "Stateless service tiers" }
+    covers: "Scaling up (bigger machine: simple, bounded, single point of failure) vs scaling out (more machines: needs partitioning or statelessness, adds coordination). Teaches moving session and other state out of the web tier so instances are interchangeable, autoscaling and its lag, and that the stateful tier (database) is usually what limits scale-out. Leaves load balancers to scl-load-balancers."
+    sources:
+      - { ref: primer, section: "Load balancer — Horizontal scaling (Disadvantage(s): horizontal scaling)", url: "https://github.com/donnemartin/system-design-primer#horizontal-scaling" }
+      - { ref: sre-workbook, section: "Ch. 11 Managing Load — Autoscaling", url: "https://sre.google/workbook/managing-load/" }
+
+  - id: scl-load-balancers
+    module: scaling
+    order: 2
+    file: 02-load-balancers.md
+    title: "Load balancers: layer 4, layer 7 and DNS"
+    prereqs: [scl-scaling-strategies, fnd-dns, fnd-http]
+    concepts:
+      - { id: scl-l4-vs-l7, name: "Layer 4 vs layer 7 load balancing" }
+      - { id: scl-dns-load-balancing, name: "DNS and anycast front-end balancing" }
+    covers: "Where balancing happens: DNS for coarse global steering, virtual-IP/L4 balancers forwarding connections, and L7 reverse proxies that see requests (routing by path, TLS termination, retries). Teaches the connection-vs-request distinction (one long HTTP/2 connection pins load to one backend) and the load balancer as a component that must itself be redundant. Leaves balancing algorithms to scl-lb-algorithms."
+    sources:
+      - { ref: sre-book, section: "Ch. 19 Load Balancing at the Frontend — Load Balancing Using DNS; Load Balancing at the Virtual IP Address", url: "https://sre.google/sre-book/load-balancing-frontend/" }
+      - { ref: primer, section: "Load balancer (Layer 4 load balancing; Layer 7 load balancing); Reverse proxy (web server)", url: "https://github.com/donnemartin/system-design-primer#load-balancer" }
+
+  - id: scl-lb-algorithms
+    module: scaling
+    order: 3
+    file: 03-lb-algorithms.md
+    title: Load-balancing policies and health checks
+    prereqs: [scl-load-balancers]
+    concepts:
+      - { id: scl-balancing-policies, name: "Load-balancing policies" }
+      - { id: scl-health-checking, name: "Health checks" }
+    covers: "Round robin, least-loaded, weighted and power-of-two-choices style policies and when each misbehaves (varying request cost, slow machines, a sick backend that fails fast and so looks lightly loaded). Teaches subsetting to bound connection counts, lame-duck draining, and health checks: liveness vs dependency checks, and failing open when every check fails at once. Leaves service discovery to scl-service-discovery."
+    sources:
+      - { ref: sre-book, section: "Ch. 20 Load Balancing in the Datacenter — Lame Duck State; Picking the Right Subset; Least-Loaded Round Robin; Weighted Round Robin", url: "https://sre.google/sre-book/load-balancing-datacenter/" }
+      - { ref: aws-builders-library, section: "Implementing health checks — Ways to measure health; Reacting safely to health check failures (Fail open)", url: "https://aws.amazon.com/builders-library/implementing-health-checks/" }
+
+  - id: scl-service-discovery
+    module: scaling
+    order: 4
+    file: 04-service-discovery.md
+    title: Service discovery
+    prereqs: [scl-lb-algorithms, dst-coordination-services]
+    concepts:
+      - { id: scl-service-registry, name: "Service registries" }
+      - { id: scl-discovery-staleness, name: "Stale discovery data" }
+    covers: "How callers find healthy instances of a service whose addresses change: DNS names, a registry with heartbeated (ephemeral) registrations, client-side vs server-side discovery, and Kubernetes Services/EndpointSlices. Teaches the staleness window between an instance dying and callers noticing, and why discovery must fail static (keep the last known list) rather than empty. Leaves balancing policy to scl-lb-algorithms."
+    sources:
+      - { ref: kubernetes-docs, section: "Service (EndpointSlices; DNS for Services and Pods)", url: "https://kubernetes.io/docs/concepts/services-networking/service/" }
+      - { ref: zookeeper-paper, section: "§2.4 Examples of primitives (Group Membership)" }
+      - { ref: primer, section: "Application layer — Service Discovery", url: "https://github.com/donnemartin/system-design-primer#service-discovery" }
+
+  - id: scl-caching-patterns
+    module: scaling
+    order: 5
+    file: 05-caching-patterns.md
+    title: Caching patterns and where caches live
+    prereqs: [scl-scaling-strategies, dst-consistency-models]
+    concepts:
+      - { id: scl-cache-aside, name: "Cache-aside" }
+      - { id: scl-cache-write-policies, name: "Write-through, write-behind and refresh-ahead" }
+    covers: "Why caching works (skewed access, expensive recomputation) and where caches sit: client, CDN, local in-process, external shared cache. Teaches cache-aside vs inline (read-through/write-through) caches, write-behind's durability risk, hit ratio as the number that decides value, and the danger of a service that cannot survive its cache going cold. Leaves invalidation to scl-cache-invalidation and eviction to scl-eviction-ttl."
+    sources:
+      - { ref: aws-builders-library, section: "Caching challenges and strategies — Local caches; External caches; Inline vs. side caches", url: "https://aws.amazon.com/builders-library/caching-challenges-and-strategies/" }
+      - { ref: primer, section: "Cache — When to update the cache (Cache-aside; Write-through; Write-behind; Refresh-ahead)", url: "https://github.com/donnemartin/system-design-primer#when-to-update-the-cache" }
+
+  - id: scl-cache-invalidation
+    module: scaling
+    order: 6
+    file: 06-cache-invalidation.md
+    title: Cache invalidation and stale data
+    prereqs: [scl-caching-patterns]
+    concepts:
+      - { id: scl-invalidation-strategies, name: "Cache invalidation strategies" }
+      - { id: scl-stale-set-race, name: "Stale-set races" }
+    covers: "TTL-only expiry vs explicit delete-on-write vs update-on-write, and why deleting is usually safer than updating. Teaches the race where a slow reader writes an old value back after an invalidation, and how leases/version checks prevent it; invalidation fan-out across regions driven from the database's commit log. Leaves eviction policy to scl-eviction-ttl."
+    sources:
+      - { ref: memcache-fb, section: "§3.2.1 Leases; §4.1 Regional Invalidations; §5 Across Regions: Consistency" }
+      - { ref: aws-builders-library, section: "Caching challenges and strategies — Cache expiration", url: "https://aws.amazon.com/builders-library/caching-challenges-and-strategies/" }
+
+  - id: scl-eviction-ttl
+    module: scaling
+    order: 7
+    file: 07-eviction-ttl.md
+    title: Eviction policies and TTLs
+    prereqs: [scl-caching-patterns]
+    concepts:
+      - { id: scl-eviction-policy, name: "Eviction policies" }
+      - { id: scl-ttl-expiration, name: "TTL expiration" }
+    covers: "What happens when a cache is full: LRU, LFU, random and approximated LRU (sampling), and which access patterns defeat each (scans flush LRU). Teaches TTLs as both a freshness bound and a memory bound, lazy vs active expiry (a timer heap or sampled scan), and memory accounting overheads. Leaves implementation to lab-cache."
+    sources:
+      - { ref: redis-docs, section: "Key eviction — Eviction policies; Approximated LRU algorithm; LFU eviction", url: "https://redis.io/docs/latest/develop/reference/eviction/" }
+      - { ref: byo-redis, section: "13. Cache Expiration with TTL", url: "https://build-your-own.org/redis/13_heap.html" }
+
+  - id: scl-cache-stampede
+    module: scaling
+    order: 8
+    file: 08-cache-stampede.md
+    title: Cache stampedes and cold caches
+    prereqs: [scl-cache-invalidation, scl-eviction-ttl]
+    concepts:
+      - { id: scl-stampede-mitigation, name: "Cache stampede mitigation" }
+      - { id: scl-cold-cache-warmup, name: "Cold cache warm-up" }
+    covers: "When a hot key expires, many concurrent misses recompute it and hammer the backend (thundering herd). Teaches request coalescing/single-flight, leases, probabilistic early expiration, stale-while-revalidate and TTL jitter, and why synchronized expiry of many keys is its own stampede. Covers warming a cold cache cluster without overloading the database. Leaves general overload to prd-load-shedding."
+    sources:
+      - { ref: cache-stampede-paper, section: "§2 Model; §2.2 Probabilistic early expirations" }
+      - { ref: memcache-fb, section: "§3.2.1 Leases (thundering herds); §4.3 Cold Cluster Warmup" }
+
+  - id: scl-cdn
+    module: scaling
+    order: 9
+    file: 09-cdn.md
+    title: CDNs and HTTP caching at the edge
+    prereqs: [scl-eviction-ttl, fnd-http]
+    concepts:
+      - { id: scl-cdn-edge-caching, name: "CDN edge caching" }
+      - { id: scl-http-cache-directives, name: "HTTP cache freshness and validation" }
+    covers: "CDNs as overlays of edge caches close to users: request routing to a nearby edge, push vs pull, origin shielding. Teaches HTTP freshness (max-age, Expires), validation (ETag, conditional GET), no-cache vs no-store, cache keys and Vary, versioned asset URLs instead of purges, and what must not be cached (personalised responses). Leaves object storage origins to dat-object-storage."
+    sources:
+      - { ref: systems-approach, section: "9.4.3 Content Distribution Networks — Mechanisms; Policies", url: "https://book.systemsapproach.org/applications/overlays.html" }
+      - { ref: rfc9111, section: "§4.2 Freshness; §5.2.2 Response Directives", url: "https://www.rfc-editor.org/rfc/rfc9111.html" }
+      - { ref: primer, section: "Content delivery network (Push CDNs; Pull CDNs)", url: "https://github.com/donnemartin/system-design-primer#content-delivery-network" }
+
+  - id: scl-message-queues
+    module: scaling
+    order: 10
+    file: 10-message-queues.md
+    title: "Message queues: acknowledgements and redelivery"
+    prereqs: [dst-delivery-semantics]
+    concepts:
+      - { id: scl-queue-ack-redelivery, name: "Acknowledgement and redelivery" }
+      - { id: scl-dead-letter-queue, name: "Dead-letter queues" }
+    covers: "Queues decouple producers from consumers in time and rate. Teaches competing consumers, visibility timeouts/acks and redelivery after a consumer dies (hence duplicates), ordering limits, and dead-letter queues for messages that keep failing. Covers why a queue hides an outage until the backlog is huge. Leaves pub/sub fan-out to scl-pubsub and backlog policy to scl-backpressure."
+    sources:
+      - { ref: aws-sqs-guide, section: "Amazon SQS visibility timeout", url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html" }
+      - { ref: aws-sqs-guide, section: "Using dead-letter queues in Amazon SQS", url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html" }
+      - { ref: primer, section: "Asynchronism — Message queues", url: "https://github.com/donnemartin/system-design-primer#message-queues" }
+
+  - id: scl-pubsub
+    module: scaling
+    order: 11
+    file: 11-pubsub.md
+    title: Publish/subscribe and fan-out
+    prereqs: [scl-message-queues]
+    concepts:
+      - { id: scl-pubsub-fanout, name: "Publish/subscribe fan-out" }
+      - { id: scl-queue-vs-topic, name: "Queues vs topics" }
+    covers: "Point-to-point queues (each message to one consumer) vs topics (each message to every subscriber group). Teaches fire-and-forget pub/sub (Redis Pub/Sub: offline subscribers miss messages) vs durable subscriptions, fan-out cost proportional to subscribers, and filtering by channel or pattern. Leaves durable partitioned logs to scl-log-brokers."
+    sources:
+      - { ref: redis-docs, section: "Redis Pub/sub — Delivery semantics; Pattern-matching subscriptions", url: "https://redis.io/docs/latest/develop/pubsub/" }
+      - { ref: kafka-docs, section: "Introduction — Main Concepts and Terminology", url: "https://kafka.apache.org/42/getting-started/introduction/" }
+
+  - id: scl-log-brokers
+    module: scaling
+    order: 12
+    file: 12-log-brokers.md
+    title: "Log-based brokers: partitions, offsets and consumer groups"
+    prereqs: [scl-pubsub, dat-partitioning]
+    concepts:
+      - { id: scl-partitioned-log, name: "Partitioned append-only logs" }
+      - { id: scl-consumer-offsets, name: "Consumer groups and offsets" }
+    covers: "Kafka's model: topics split into partitions, each an append-only log on disk read sequentially; ordering only within a partition; retention independent of consumption, so consumers can replay. Teaches consumer groups (one consumer per partition), committed offsets, rebalancing pauses, in-sync replicas and the durability effect of acks settings, and log compaction. Leaves event-time processing to scl-stream-processing."
+    sources:
+      - { ref: kafka-paper, section: "§3 Kafka Architecture and Design Principles; §3.1 Efficiency on a Single Partition; §3.2 Distributed Coordination" }
+      - { ref: kafka-docs, section: "Design — The Consumer (Consumer Position); Replication; Log Compaction", url: "https://kafka.apache.org/42/design/design/" }
+
+  - id: scl-stream-processing
+    module: scaling
+    order: 13
+    file: 13-stream-processing.md
+    title: "Stream processing: event time, windows and watermarks"
+    prereqs: [scl-log-brokers, dst-physical-clocks]
+    concepts:
+      - { id: scl-event-time-windowing, name: "Event time and windowing" }
+      - { id: scl-watermarks, name: "Watermarks and late data" }
+    covers: "Processing unbounded data continuously instead of in periodic batches (with MapReduce-style batch as the contrast). Teaches event time vs processing time, fixed/sliding/session windows, watermarks as a heuristic for completeness, triggers, and handling late data (drop, update, side output). Covers stateful operators and checkpointing at intuition level. Leaves broker mechanics to scl-log-brokers."
+    sources:
+      - { ref: dataflow-paper, section: "§1.2 Windowing; §1.3 Time Domains; §2.3 Triggers & Incremental Processing" }
+      - { ref: mapreduce-paper, section: "§2 Programming Model; §3.3 Fault Tolerance" }
+      - { ref: sre-book, section: "Ch. 25 Data Processing Pipelines — Origin of the Pipeline Design Pattern", url: "https://sre.google/sre-book/data-processing-pipelines/" }
+
+  - id: scl-background-jobs
+    module: scaling
+    order: 14
+    file: 14-background-jobs.md
+    title: Background jobs and task queues
+    prereqs: [scl-message-queues, dst-idempotency]
+    concepts:
+      - { id: scl-async-job-offload, name: "Offloading work to background jobs" }
+      - { id: scl-poison-messages, name: "Poison messages and job retries" }
+    covers: "Moving slow or failure-prone work (email, thumbnails, exports) out of the request path: enqueue, return 202 with a job id, process with workers, expose status. Teaches job idempotency, retry limits with backoff, poison messages and dead-lettering, visibility timeouts vs job duration (heartbeats), and priority queues. Leaves timing and recurring jobs to scl-job-scheduling."
+    sources:
+      - { ref: primer, section: "Asynchronism — Task queues; Back pressure", url: "https://github.com/donnemartin/system-design-primer#task-queues" }
+      - { ref: aws-sqs-guide, section: "Using dead-letter queues in Amazon SQS", url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html" }
+
+  - id: scl-job-scheduling
+    module: scaling
+    order: 15
+    file: 15-job-scheduling.md
+    title: "Scheduling: cron, delays and timers"
+    prereqs: [scl-background-jobs, dst-leases-fencing]
+    concepts:
+      - { id: scl-distributed-cron, name: "Distributed cron" }
+      - { id: scl-timer-structures, name: "Timers and delayed execution" }
+    covers: "Running jobs at times or intervals across a fleet without running them zero or two times: a leader-elected scheduler with persisted state, deciding whether to skip or catch up missed runs, and idempotent jobs. Teaches delayed delivery (delay queues) and timer data structures (heaps, timer wheels) for many timeouts. Covers thundering-herd starts when many jobs share a schedule. Leaves job execution to scl-background-jobs."
+    sources:
+      - { ref: sre-book, section: "Ch. 24 Distributed Periodic Scheduling with Cron — Tracking the State of Cron Jobs; The Use of Paxos; Resolving partial failures", url: "https://sre.google/sre-book/distributed-periodic-scheduling/" }
+      - { ref: aws-sqs-guide, section: "Amazon SQS delay queues", url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-delay-queues.html" }
+      - { ref: byo-redis, section: "12. Timer and Timeout", url: "https://build-your-own.org/redis/12_timer.html" }
+
+  - id: scl-polling-sse
+    module: scaling
+    order: 16
+    file: 16-polling-sse.md
+    title: Polling, long polling and server-sent events
+    prereqs: [fnd-connection-reuse]
+    concepts:
+      - { id: scl-polling-tradeoffs, name: "Polling vs long polling" }
+      - { id: scl-server-sent-events, name: "Server-sent events" }
+    covers: "Getting server updates to clients: short polling (simple, wasteful, latency = interval), long polling (held requests, reconnect per message) and HTTP streaming. Teaches server-sent events: a one-way text event stream over HTTP with automatic reconnection, event ids and Last-Event-ID for resumption, and proxy/connection-limit pitfalls. Leaves bidirectional channels to scl-websockets and mobile push to case-notification-platform."
+    sources:
+      - { ref: rfc6202, section: "§2 HTTP Long Polling; §3 HTTP Streaming (issues and best practices)", url: "https://www.rfc-editor.org/rfc/rfc6202.html" }
+      - { ref: whatwg-sse, section: "§9.2 Server-sent events — The EventSource interface; Processing model; The Last-Event-ID header", url: "https://html.spec.whatwg.org/multipage/server-sent-events.html" }
+
+  - id: scl-websockets
+    module: scaling
+    order: 17
+    file: 17-websockets.md
+    title: WebSockets and connection-holding services
+    prereqs: [scl-polling-sse, fnd-io-models, scl-lb-algorithms]
+    concepts:
+      - { id: scl-websocket-protocol, name: "The WebSocket protocol" }
+      - { id: scl-stateful-connection-fleet, name: "Operating stateful connection fleets" }
+    covers: "The HTTP Upgrade handshake, framing, ping/pong keepalives and close codes. Teaches running millions of long-lived connections: event-driven servers, memory per connection, routing a message to the server holding a user's connection (a presence/connection registry plus pub/sub), load-balancer idle timeouts, and reconnect storms after a deploy. Leaves message ordering and delivery to case-chat."
+    sources:
+      - { ref: rfc6455, section: "§1.3 Opening Handshake; §5 Data Framing; §5.5.2 Ping; §7 Closing the Connection", url: "https://www.rfc-editor.org/rfc/rfc6455.html" }
+      - { ref: byo-redis, section: "05. Concurrent IO Models", url: "https://build-your-own.org/redis/05_event_loop_intro.html" }
+
+  - id: scl-backpressure
+    module: scaling
+    order: 18
+    file: 18-backpressure.md
+    title: Backpressure and bounded queues
+    prereqs: [scl-message-queues, fnd-flow-congestion]
+    concepts:
+      - { id: scl-backpressure-signal, name: "Backpressure" }
+      - { id: scl-bounded-queue, name: "Bounded queues" }
+    covers: "When producers outpace consumers, work piles up somewhere; unbounded queues turn overload into latency and memory exhaustion. Teaches backpressure (block, reject or slow the producer), bounded queues, LIFO or deadline-aware dequeue under backlog, and why a backlog of stale work wastes capacity. Leaves admission decisions to scl-admission-control and shedding to prd-load-shedding."
+    sources:
+      - { ref: aws-builders-library, section: "Avoiding insurmountable queue backlogs — Backlogs; Amazon's approach", url: "https://aws.amazon.com/builders-library/avoiding-insurmountable-queue-backlogs/" }
+      - { ref: sre-book, section: "Ch. 22 Addressing Cascading Failures — Queue Management", url: "https://sre.google/sre-book/addressing-cascading-failures/" }
+
+  - id: scl-admission-control
+    module: scaling
+    order: 19
+    file: 19-admission-control.md
+    title: Admission control, quotas and fairness
+    prereqs: [scl-backpressure]
+    concepts:
+      - { id: scl-admission-decision, name: "Admission control" }
+      - { id: scl-tenant-fairness, name: "Per-tenant quotas and fairness" }
+    covers: "Deciding at the door whether to accept work, based on capacity and on who is asking. Teaches per-client quotas, local vs distributed admission control, client-side throttling that rejects locally when the backend is already refusing, and fairness so one noisy tenant cannot starve others. Leaves the specific algorithms to scl-rate-limiting."
+    sources:
+      - { ref: aws-builders-library, section: "Fairness in multi-tenant systems — Implementing layers of admission control", url: "https://aws.amazon.com/builders-library/fairness-in-multi-tenant-systems/" }
+      - { ref: sre-book, section: "Ch. 21 Handling Overload — Client-Side Throttling; Criticality", url: "https://sre.google/sre-book/handling-overload/" }
+
+  - id: scl-rate-limiting
+    module: scaling
+    order: 20
+    file: 20-rate-limiting.md
+    title: Rate-limiting algorithms
+    prereqs: [scl-admission-control]
+    concepts:
+      - { id: scl-token-bucket, name: "Token bucket" }
+      - { id: scl-window-counters, name: "Fixed and sliding window counters" }
+    covers: "Token bucket (rate plus burst), leaky bucket, fixed window (boundary bursts) and sliding window log/counter, with their memory and accuracy tradeoffs. Teaches where limits are enforced (edge, gateway, service), distributed counters in a shared store and the race-free update, communicating limits (429, Retry-After), and failing open vs closed when the limiter's store is down. Leaves the full design to case-rate-limiter and lab-rate-limiter."
+    sources:
+      - { ref: stripe-blog-rate-limiters, section: "Scaling your API with rate limiters (token bucket; rate limiters and load shedders)", url: "https://stripe.com/blog/rate-limiters" }
+      - { ref: systems-approach, section: "6.5 Quality of Service (token bucket filter)", url: "https://book.systemsapproach.org/congestion/qos.html" }
+      - { ref: rfc6585, section: "§4 429 Too Many Requests", url: "https://www.rfc-editor.org/rfc/rfc6585.html" }
+
+  # ───────────────────────────── PRODUCTION ENGINEERING ─────────────────────────────
+  - id: prd-availability
+    module: production
+    order: 1
+    file: 01-availability.md
+    title: "Availability: measuring and composing it"
+    prereqs: [fnd-functional-nonfunctional, dst-failure-detection]
+    concepts:
+      - { id: prd-availability-composition, name: "Composing availability" }
+      - { id: prd-sli-choice, name: "Choosing service level indicators" }
+    covers: "Time-based vs request-based availability, what the nines mean in minutes per month, and how availability composes: dependencies in series multiply down, redundant replicas in parallel help only if failures are independent. Teaches choosing SLIs that reflect user experience (success ratio, latency, freshness, durability) and measuring them at the right point. Leaves targets and budgets to prd-slos-error-budgets."
+    sources:
+      - { ref: sre-book, section: "Ch. 3 Embracing Risk — Managing Risk; Target level of availability", url: "https://sre.google/sre-book/embracing-risk/" }
+      - { ref: sre-book, section: "Ch. 4 Service Level Objectives — Indicators; Collecting Indicators", url: "https://sre.google/sre-book/service-level-objectives/" }
+      - { ref: primer, section: "Availability in numbers (Availability in parallel vs in sequence)", url: "https://github.com/donnemartin/system-design-primer#availability-in-numbers" }
+
+  - id: prd-slos-error-budgets
+    module: production
+    order: 2
+    file: 02-slos-error-budgets.md
+    title: SLOs and error budgets
+    prereqs: [prd-availability, fnd-latency-percentiles]
+    concepts:
+      - { id: prd-slo-definition, name: "Service level objectives" }
+      - { id: prd-error-budget, name: "Error budgets" }
+    covers: "SLIs, SLOs and SLAs distinguished; writing an SLO with a window and a target; why 100 percent is the wrong target. Teaches the error budget (1 − SLO) as a shared currency between reliability and release velocity, budget policies when it is exhausted, and rolling vs calendar windows. Leaves alerting on budgets to prd-alerting."
+    sources:
+      - { ref: sre-book, section: "Ch. 3 Embracing Risk — Forming Your Error Budget", url: "https://sre.google/sre-book/embracing-risk/" }
+      - { ref: sre-workbook, section: "Ch. 2 Implementing SLOs — Choosing an Appropriate Time Window; Decision Making Using SLOs and Error Budgets", url: "https://sre.google/workbook/implementing-slos/" }
+      - { ref: sre-workbook, section: "Appendix B Example Error Budget Policy", url: "https://sre.google/workbook/error-budget-policy/" }
+
+  - id: prd-metrics
+    module: production
+    order: 3
+    file: 03-metrics.md
+    title: Metrics and the golden signals
+    prereqs: [prd-slos-error-budgets]
+    concepts:
+      - { id: prd-golden-signals, name: "The four golden signals" }
+      - { id: prd-metric-cardinality, name: "Metric types and cardinality" }
+    covers: "Latency, traffic, errors and saturation as the minimum set for a user-facing service; white-box vs black-box monitoring. Teaches counters, gauges and histograms (and why latency needs histograms, not averages), rate computation, and label cardinality as the cost driver of a metrics system. Leaves logs and traces to prd-logs-traces."
+    sources:
+      - { ref: sre-book, section: "Ch. 6 Monitoring Distributed Systems — The Four Golden Signals; Black-box monitoring", url: "https://sre.google/sre-book/monitoring-distributed-systems/" }
+      - { ref: prometheus-docs, section: "Metric types; Histograms and summaries", url: "https://prometheus.io/docs/practices/histograms/" }
+      - { ref: prometheus-docs, section: "Instrumentation (label cardinality)", url: "https://prometheus.io/docs/practices/instrumentation/" }
+
+  - id: prd-logs-traces
+    module: production
+    order: 4
+    file: 04-logs-traces.md
+    title: Structured logs and distributed tracing
+    prereqs: [prd-metrics, fnd-rpc]
+    concepts:
+      - { id: prd-structured-request-logs, name: "Structured request logs" }
+      - { id: prd-trace-spans, name: "Traces, spans and context propagation" }
+    covers: "One structured log record per request with timings, sizes, ids and outcome, and when logs are better than metrics (high-cardinality drill-down). Teaches distributed tracing: trace and span ids, parent-child spans, context propagation across RPC and queue boundaries, sampling and its blind spots. Leaves the debugging workflow to prd-troubleshooting."
+    sources:
+      - { ref: aws-builders-library, section: "Instrumenting distributed systems for operational visibility — Request log best practices", url: "https://aws.amazon.com/builders-library/instrumenting-distributed-systems-for-operational-visibility/" }
+      - { ref: dapper-paper, section: "§2.1 Trace trees and spans; §2.4 Sampling" }
+      - { ref: opentelemetry-docs, section: "Traces; Context propagation", url: "https://opentelemetry.io/docs/concepts/signals/traces/" }
+
+  - id: prd-alerting
+    module: production
+    order: 5
+    file: 05-alerting.md
+    title: Actionable alerting
+    prereqs: [prd-metrics]
+    concepts:
+      - { id: prd-symptom-based-alerting, name: "Symptom-based alerting" }
+      - { id: prd-burn-rate-alerting, name: "Error-budget burn-rate alerts" }
+    covers: "Page on symptoms users feel, not every cause; every page must be urgent, actionable and need a human. Teaches alerting on SLO burn rate with multiple windows to balance detection time, precision and reset time, low-traffic pitfalls, and the cost of noisy pages. Leaves incident diagnosis to prd-troubleshooting."
+    sources:
+      - { ref: sre-book, section: "Ch. 6 Monitoring Distributed Systems — Symptoms Versus Causes", url: "https://sre.google/sre-book/monitoring-distributed-systems/" }
+      - { ref: sre-workbook, section: "Ch. 5 Alerting on SLOs — Alerting Considerations; Ways to Alert on Significant Events; Low-Traffic Services", url: "https://sre.google/workbook/alerting-on-slos/" }
+
+  - id: prd-troubleshooting
+    module: production
+    order: 6
+    file: 06-troubleshooting.md
+    title: Systematic troubleshooting
+    prereqs: [prd-logs-traces, prd-alerting, fnd-bottlenecks-utilization]
+    concepts:
+      - { id: prd-hypothesis-driven-debugging, name: "Hypothesis-driven troubleshooting" }
+      - { id: prd-use-method-practice, name: "Applying the USE method in incidents" }
+    covers: "Triage (stop the bleeding first), examine, diagnose, test and treat; forming and falsifying hypotheses instead of chasing correlations; 'what changed last'. Teaches applying USE checks per resource and following latency through traces to the saturated component, plus common traps (correlation vs causation, fixing the symptom). Leaves postmortems as a pointer."
+    sources:
+      - { ref: sre-book, section: "Ch. 12 Effective Troubleshooting — Triage; Examine; Diagnose; Test and Treat", url: "https://sre.google/sre-book/effective-troubleshooting/" }
+      - { ref: use-method, section: "The USE Method — Suggested Interpretations; Strategy" }
+
+  - id: prd-timeouts
+    module: production
+    order: 7
+    file: 07-timeouts.md
+    title: Timeouts and deadline propagation
+    prereqs: [dst-partial-failure, fnd-latency-percentiles]
+    concepts:
+      - { id: prd-timeout-setting, name: "Choosing timeouts" }
+      - { id: prd-deadline-propagation, name: "Deadline propagation" }
+    covers: "Every remote call needs a timeout; picking it from the dependency's latency percentiles and the caller's own budget, and separate connect vs request timeouts. Teaches deadline propagation so downstream services stop work the caller has already abandoned, cancellation, and the danger of nested timeouts that exceed the outer one. Leaves retries to prd-retries."
+    sources:
+      - { ref: aws-builders-library, section: "Timeouts, retries, and backoff with jitter — Timeouts", url: "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/" }
+      - { ref: sre-book, section: "Ch. 22 Addressing Cascading Failures — Latency and Deadlines (Picking a deadline; Deadline propagation; Cancellation propagation)", url: "https://sre.google/sre-book/addressing-cascading-failures/" }
+      - { ref: grpc-docs, section: "Deadlines guide — Deadline Propagation", url: "https://grpc.io/docs/guides/deadlines/" }
+
+  - id: prd-retries
+    module: production
+    order: 8
+    file: 08-retries.md
+    title: "Retries: backoff, jitter and retry budgets"
+    prereqs: [prd-timeouts, dst-idempotency]
+    concepts:
+      - { id: prd-backoff-jitter, name: "Exponential backoff with jitter" }
+      - { id: prd-retry-budget, name: "Retry budgets" }
+    covers: "Retries mask transient failures but multiply load during real outages, and retries at every layer multiply each other. Teaches exponential backoff with jitter to spread retries, a per-request attempt cap, per-client retry budgets (retry ratio), retrying only at one layer, and which errors are retryable. Leaves circuit breaking to prd-circuit-breakers."
+    sources:
+      - { ref: aws-builders-library, section: "Timeouts, retries, and backoff with jitter — Retries and backoff; Jitter", url: "https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/" }
+      - { ref: sre-book, section: "Ch. 21 Handling Overload — Deciding to Retry", url: "https://sre.google/sre-book/handling-overload/" }
+      - { ref: sre-book, section: "Ch. 22 Addressing Cascading Failures — Retries", url: "https://sre.google/sre-book/addressing-cascading-failures/" }
+
+  - id: prd-circuit-breakers
+    module: production
+    order: 9
+    file: 09-circuit-breakers.md
+    title: Circuit breakers and fallbacks
+    prereqs: [prd-retries]
+    concepts:
+      - { id: prd-circuit-breaker-states, name: "Circuit breaker states" }
+      - { id: prd-fallback-hazards, name: "The hazards of fallback" }
+    covers: "Circuit breakers stop calling a failing dependency (closed, open, half-open), fail fast and give it time to recover; thresholds and per-host vs per-service breakers. Teaches why fallback paths are rarely exercised and can cause outages of their own, and alternatives: push data ahead of time, let the caller handle errors, convert fallback into failover. Leaves overload control to prd-load-shedding."
+    sources:
+      - { ref: fowler-circuit-breaker, section: "CircuitBreaker (bliki)", url: "https://martinfowler.com/bliki/CircuitBreaker.html" }
+      - { ref: aws-builders-library, section: "Avoiding fallback in distributed systems — Distributed fallback; How Amazon avoids fallback", url: "https://aws.amazon.com/builders-library/avoiding-fallback-in-distributed-systems/" }
+
+  - id: prd-cascading-failures
+    module: production
+    order: 10
+    file: 10-cascading-failures.md
+    title: Cascading failures
+    prereqs: [prd-retries, scl-backpressure]
+    concepts:
+      - { id: prd-cascade-mechanisms, name: "How failures cascade" }
+      - { id: prd-cascade-prevention, name: "Preventing cascading failures" }
+    covers: "How one overloaded component spreads failure: resource exhaustion (threads, memory, file descriptors), load shifting to the survivors when instances crash, retry amplification and slow startup that keeps the system in the bad state. Teaches prevention and recovery: capacity margins, limits on queues and retries, avoiding calls up the stack, and shedding load to recover. Leaves shedding policy to prd-load-shedding."
+    sources:
+      - { ref: sre-book, section: "Ch. 22 Addressing Cascading Failures — Causes of Cascading Failures; Resource Exhaustion; Service Unavailability; Process Death", url: "https://sre.google/sre-book/addressing-cascading-failures/" }
+      - { ref: aws-builders-library, section: "Using load shedding to avoid overload — The anatomy of overload (Positive feedback loops)", url: "https://aws.amazon.com/builders-library/using-load-shedding-to-avoid-overload/" }
+
+  - id: prd-load-shedding
+    module: production
+    order: 11
+    file: 11-load-shedding.md
+    title: Load shedding and graceful degradation
+    prereqs: [prd-cascading-failures, scl-admission-control]
+    concepts:
+      - { id: prd-load-shedding-policy, name: "Load shedding" }
+      - { id: prd-graceful-degradation, name: "Graceful degradation" }
+    covers: "Rejecting excess work cheaply so the server keeps doing useful work at its capacity instead of collapsing (goodput vs throughput). Teaches what to shed (by priority/criticality, by deadline already missed), shedding early in the request, finishing work already started, and graceful degradation: serving cheaper, staler or partial responses. Leaves isolation between tenants to prd-isolation."
+    sources:
+      - { ref: aws-builders-library, section: "Using load shedding to avoid overload — Load shedding mechanisms (Prioritizing requests; Keeping an eye on the clock)", url: "https://aws.amazon.com/builders-library/using-load-shedding-to-avoid-overload/" }
+      - { ref: sre-book, section: "Ch. 22 Addressing Cascading Failures — Load Shedding and Graceful Degradation", url: "https://sre.google/sre-book/addressing-cascading-failures/" }
+
+  - id: prd-isolation
+    module: production
+    order: 12
+    file: 12-isolation.md
+    title: Bulkheads, cells and shuffle sharding
+    prereqs: [prd-load-shedding, dat-hot-keys]
+    concepts:
+      - { id: prd-bulkhead-isolation, name: "Bulkheads and cells" }
+      - { id: prd-shuffle-sharding, name: "Shuffle sharding" }
+    covers: "Limiting blast radius by giving workloads separate resource pools (thread pools, connection pools, whole cells) so one bad client or poison request cannot take down everyone. Teaches shuffle sharding: assigning each customer a random small subset of workers so two customers rarely share all of them, and the arithmetic of overlap. Leaves deployment blast radius to prd-deployments."
+    sources:
+      - { ref: aws-builders-library, section: "Workload isolation using shuffle-sharding — What is shuffle sharding?", url: "https://aws.amazon.com/builders-library/workload-isolation-using-shuffle-sharding/" }
+      - { ref: aws-builders-library, section: "Fairness in multi-tenant systems — The case for multitenancy", url: "https://aws.amazon.com/builders-library/fairness-in-multi-tenant-systems/" }
+
+  - id: prd-backup-recovery
+    module: production
+    order: 13
+    file: 13-backup-recovery.md
+    title: Backups, restores, RPO and RTO
+    prereqs: [dat-crash-recovery, dat-leader-replication]
+    concepts:
+      - { id: prd-rpo-rto, name: "RPO and RTO" }
+      - { id: prd-backup-layers, name: "Layered backup and restore strategy" }
+    covers: "RPO (how much data you may lose) and RTO (how long recovery may take) as the requirements that pick a strategy. Teaches why replication is not a backup (it replicates deletes and corruption), full/incremental backups plus WAL archiving for point-in-time recovery, soft deletion, out-of-band validation, and that only a tested restore counts. Leaves multi-region failover design as a pointer."
+    sources:
+      - { ref: sre-book, section: "Ch. 26 Data Integrity — Backups Versus Archives; Delivering a Recovery System, Rather Than a Backup System; Knowing That Data Recovery Will Work", url: "https://sre.google/sre-book/data-integrity/" }
+      - { ref: aws-well-architected, section: "Reliability Pillar — Disaster Recovery (DR) objectives", url: "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/disaster-recovery-dr-objectives.html" }
+      - { ref: postgres-docs, section: "§25.3 Continuous Archiving and Point-in-Time Recovery (PITR)", url: "https://www.postgresql.org/docs/current/continuous-archiving.html" }
+
+  - id: prd-deployments
+    module: production
+    order: 14
+    file: 14-deployments.md
+    title: "Safe deployments: canaries and rollbacks"
+    prereqs: [prd-slos-error-budgets, prd-metrics]
+    concepts:
+      - { id: prd-canary-analysis, name: "Canary releases" }
+      - { id: prd-rollback-readiness, name: "Rollback readiness" }
+    covers: "Most outages follow a change. Teaches progressive rollout (one box, one zone, one region), canary analysis comparing canary and control metrics, bake times, automatic rollback, blue-green vs rolling deploys, and feature flags to separate deploy from release. Leaves data-format and schema compatibility to prd-compatible-change."
+    sources:
+      - { ref: sre-book, section: "Ch. 8 Release Engineering — Deployment", url: "https://sre.google/sre-book/release-engineering/" }
+      - { ref: sre-workbook, section: "Ch. 16 Canarying Releases — What Is Canarying?; Selecting and Evaluating Metrics", url: "https://sre.google/workbook/canarying-releases/" }
+      - { ref: aws-builders-library, section: "Automating safe, hands-off deployments — The four pipeline phases", url: "https://aws.amazon.com/builders-library/automating-safe-hands-off-deployments/" }
+
+  - id: prd-compatible-change
+    module: production
+    order: 15
+    file: 15-compatible-change.md
+    title: Schema migrations and mixed-version compatibility
+    prereqs: [prd-deployments, fnd-api-evolution, dat-two-phase-locking]
+    concepts:
+      - { id: prd-expand-contract, name: "Expand-contract changes" }
+      - { id: prd-online-backfill, name: "Online data migration and backfill" }
+    covers: "During a rolling deploy old and new code run together, and after a rollback old code reads data written by new code. Teaches two-phase (read-new-format first, write-new-format later) deployments, expand-contract schema changes, dual writing and backfilling with verification, and DDL that takes locks long enough to cause an outage. Leaves API versioning to fnd-api-evolution."
+    sources:
+      - { ref: aws-builders-library, section: "Ensuring rollback safety during deployments — Two-phase deployment technique; Best practices for serialization", url: "https://aws.amazon.com/builders-library/ensuring-rollback-safety-during-deployments/" }
+      - { ref: fowler-parallel-change, section: "ParallelChange (bliki)", url: "https://martinfowler.com/bliki/ParallelChange.html" }
+      - { ref: stripe-blog-online-migrations, section: "Online migrations at scale (the four-step dual writing pattern)", url: "https://stripe.com/blog/online-migrations" }
+
+  - id: prd-authentication
+    module: production
+    order: 16
+    file: 16-authentication.md
+    title: "Authentication: passwords, sessions and tokens"
+    prereqs: [fnd-tls, fnd-http]
+    concepts:
+      - { id: prd-password-hashing, name: "Password storage" }
+      - { id: prd-session-token-tradeoffs, name: "Server sessions vs self-contained tokens" }
+    covers: "Proving who a caller is: passwords stored with slow salted hashes, MFA, and generic error messages. Teaches server-side sessions (revocable, need a store) vs signed self-contained tokens such as JWTs (no lookup, hard to revoke, expiry and audience claims must be checked), cookie flags, and service-to-service identity (mTLS). Leaves permission checks to prd-authorization."
+    sources:
+      - { ref: owasp-cheatsheets, section: "Password Storage Cheat Sheet", url: "https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html" }
+      - { ref: owasp-cheatsheets, section: "Session Management Cheat Sheet; Authentication Cheat Sheet", url: "https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html" }
+      - { ref: rfc7519, section: "§4.1 Registered Claim Names (exp); §11 Security Considerations", url: "https://www.rfc-editor.org/rfc/rfc7519.html" }
+
+  - id: prd-authorization
+    module: production
+    order: 17
+    file: 17-authorization.md
+    title: Authorization and delegated access
+    prereqs: [prd-authentication]
+    concepts:
+      - { id: prd-object-level-authorization, name: "Object-level authorization" }
+      - { id: prd-oauth-delegation, name: "OAuth 2.0 delegated authorization" }
+    covers: "Deciding what an authenticated caller may do: deny by default, check on every request server-side, least privilege, RBAC vs attribute-based checks. Teaches broken object-level authorization (changing an id in the URL) as the top API flaw, and OAuth 2.0 roles, the authorization-code flow, scopes, access vs refresh tokens. Leaves secret storage to prd-secrets-encryption."
+    sources:
+      - { ref: owasp-cheatsheets, section: "Authorization Cheat Sheet — Recommendations", url: "https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html" }
+      - { ref: owasp-api-top10, section: "API1:2023 Broken Object Level Authorization", url: "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/" }
+      - { ref: rfc6749, section: "§1.2 Protocol Flow; §1.5 Refresh Token; §4.1 Authorization Code Grant", url: "https://www.rfc-editor.org/rfc/rfc6749.html" }
+
+  - id: prd-secrets-encryption
+    module: production
+    order: 18
+    file: 18-secrets-encryption.md
+    title: Secrets management and encryption
+    prereqs: [prd-authentication]
+    concepts:
+      - { id: prd-secret-lifecycle, name: "Secret lifecycle management" }
+      - { id: prd-encryption-at-rest-transit, name: "Encryption in transit and at rest" }
+    covers: "Keeping credentials out of code, images and logs; a secrets manager with access control, auditing, rotation and short-lived credentials. Teaches encryption in transit (TLS everywhere, including internal) and at rest (envelope encryption with a key-management service), what each protects against and what it does not (a compromised application still reads plaintext). Leaves cryptographic algorithm internals out of scope."
+    sources:
+      - { ref: owasp-cheatsheets, section: "Secrets Management Cheat Sheet — General Secrets Management", url: "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html" }
+      - { ref: owasp-cheatsheets, section: "Cryptographic Storage Cheat Sheet", url: "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html" }
+      - { ref: systems-approach, section: "8.2 Cryptographic Building Blocks", url: "https://book.systemsapproach.org/security/crypto.html" }
+
+  - id: prd-abuse-prevention
+    module: production
+    order: 19
+    file: 19-abuse-prevention.md
+    title: Abuse prevention
+    prereqs: [prd-authorization, scl-rate-limiting]
+    concepts:
+      - { id: prd-resource-abuse-controls, name: "Controls against resource abuse" }
+      - { id: prd-credential-stuffing-defense, name: "Credential stuffing defences" }
+    covers: "Systems are attacked by legitimate-looking traffic: scraping, credential stuffing, expensive queries, huge uploads, sign-up and SMS-pumping fraud. Teaches layered controls: limits on request size, page size, upload size and cost per call; per-account and per-IP rate limits; MFA and breached-password checks; bot signals; and monitoring for abuse patterns. Leaves rate-limiter internals to scl-rate-limiting."
+    sources:
+      - { ref: owasp-api-top10, section: "API4:2023 Unrestricted Resource Consumption", url: "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/" }
+      - { ref: owasp-cheatsheets, section: "Credential Stuffing Prevention Cheat Sheet", url: "https://cheatsheetseries.owasp.org/cheatsheets/Credential_Stuffing_Prevention_Cheat_Sheet.html" }
+      - { ref: owasp-cheatsheets, section: "Denial of Service Cheat Sheet", url: "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html" }
+
+  - id: prd-reliability-testing
+    module: production
+    order: 20
+    file: 20-reliability-testing.md
+    title: Load testing and failure injection
+    prereqs: [prd-load-shedding, prd-troubleshooting]
+    concepts:
+      - { id: prd-load-test-methodology, name: "Load-testing methodology" }
+      - { id: prd-failure-injection, name: "Failure injection experiments" }
+    covers: "Finding capacity and breaking points before users do: open-loop vs closed-loop load generators, coordinated omission and why it hides tail latency, stress and soak tests. Teaches failure-injection experiments: a steady-state hypothesis, injecting realistic faults (latency, dependency loss, process kill), limiting blast radius, and testing disaster recovery. Leaves the hands-on version to lab-perf-failure."
+    sources:
+      - { ref: sre-book, section: "Ch. 17 Testing for Reliability — Production Tests (Stress test); Testing Disaster", url: "https://sre.google/sre-book/testing-reliability/" }
+      - { ref: principles-of-chaos, section: "Principles of Chaos Engineering (whole page)", url: "https://principlesofchaos.org/" }
+      - { ref: wrk2, section: "README — Coordinated Omission", url: "https://github.com/giltene/wrk2" }
+
+  - id: prd-cost
+    module: production
+    order: 21
+    file: 21-cost.md
+    title: Cost as a design constraint
+    prereqs: [fnd-capacity-estimation, prd-slos-error-budgets]
+    concepts:
+      - { id: prd-cost-drivers, name: "Cost drivers" }
+      - { id: prd-reliability-cost-tradeoff, name: "The cost of extra reliability" }
+    covers: "Turning a capacity estimate into money: compute, storage by tier, data transfer (often the surprise), managed-service premiums and people time. Teaches that each extra nine costs disproportionately more, over-provisioning vs autoscaling, and designing for cost visibility (per-feature or per-tenant attribution). Leaves build-vs-buy to prd-operational-complexity."
+    sources:
+      - { ref: aws-well-architected, section: "Cost Optimization Pillar", url: "https://docs.aws.amazon.com/wellarchitected/latest/cost-optimization-pillar/welcome.html" }
+      - { ref: sre-book, section: "Ch. 3 Embracing Risk — Cost", url: "https://sre.google/sre-book/embracing-risk/" }
+
+  - id: prd-operational-complexity
+    module: production
+    order: 22
+    file: 22-operational-complexity.md
+    title: Operational complexity and build vs buy
+    prereqs: [prd-cost]
+    concepts:
+      - { id: prd-operational-load, name: "Operational complexity and toil" }
+      - { id: prd-build-vs-buy, name: "Build vs buy" }
+    covers: "Every component adds failure modes, on-call load, upgrades and knowledge to keep; essential vs accidental complexity and the virtue of boring technology. Teaches toil and how to measure complexity, and build-vs-buy: build what differentiates you, buy or rent utility capability, and count lock-in, integration and operating cost on both sides. Leaves service decomposition to prd-monolith-vs-services."
+    sources:
+      - { ref: sre-book, section: "Ch. 9 Simplicity — The Virtue of Boring; essential vs accidental complexity", url: "https://sre.google/sre-book/simplicity/" }
+      - { ref: sre-workbook, section: "Ch. 7 Simplicity — Measuring Complexity", url: "https://sre.google/workbook/simplicity/" }
+      - { ref: fowler-utility-strategic, section: "UtilityVsStrategicDichotomy (bliki)", url: "https://martinfowler.com/bliki/UtilityVsStrategicDichotomy.html" }
+
+  - id: prd-monolith-vs-services
+    module: production
+    order: 23
+    file: 23-monolith-vs-services.md
+    title: Monoliths, services and when not to distribute
+    prereqs: [prd-operational-complexity, dst-sagas]
+    concepts:
+      - { id: prd-service-boundaries, name: "Choosing service boundaries" }
+      - { id: prd-distribution-tax, name: "The cost of distribution" }
+    covers: "What microservices buy (independent deploy and scaling, team autonomy, fault isolation) and what they cost: network calls instead of function calls, partial failure, distributed transactions, observability and operational overhead. Teaches boundaries along business capabilities with owned data, the modular monolith, monolith-first, and recognising when a single well-indexed database on one big machine is the right answer. Synthesis lesson: draws on dst-partial-failure, dst-sagas and prd-operational-complexity."
+    sources:
+      - { ref: fowler-microservices, section: "Microservices — Organized around Business Capabilities; Decentralized Data Management; Design for failure", url: "https://martinfowler.com/articles/microservices.html" }
+      - { ref: fowler-monolith-first, section: "MonolithFirst (bliki)", url: "https://martinfowler.com/bliki/MonolithFirst.html" }
+      - { ref: fowler-microservice-premium, section: "MicroservicePremium (bliki)", url: "https://martinfowler.com/bliki/MicroservicePremium.html" }
+
+cases:
+  - id: case-url-shortener
+    file: url-shortener.md
+    title: Design a URL shortener
+    prereqs: [fnd-capacity-estimation, fnd-api-design, dat-btree-indexes, dat-partitioning, scl-caching-patterns, scl-cdn]
+    concepts: [fnd-estimation-method, fnd-explicit-assumptions, fnd-resource-oriented-api, dat-btree-index, dat-range-vs-hash-partitioning, scl-cache-aside, scl-http-cache-directives]
+    focus: "The canonical warm-up, used to practise the full method end to end: explicit estimates for a read-heavy (around 100:1) workload, short-code generation (hash with collision handling vs counter/ranges vs random) and its uniqueness guarantee, a single indexed table that fits on one machine longer than people expect, cache-aside for hot links, and 301 vs 302 redirects (cacheability vs analytics). Unguided variant: custom aliases, expiry and per-link click analytics."
+    sources:
+      - { ref: primer, section: "Design Pastebin.com (or Bit.ly) — solution", url: "https://github.com/donnemartin/system-design-primer/blob/master/solutions/system_design/pastebin/README.md" }
+      - { ref: rfc9110, section: "§15.4 Redirection 3xx (301 vs 302)", url: "https://www.rfc-editor.org/rfc/rfc9110.html" }
+
+  - id: case-rate-limiter
+    file: rate-limiter.md
+    title: Design a distributed rate limiter
+    prereqs: [scl-rate-limiting, dat-hot-keys, prd-circuit-breakers]
+    concepts: [scl-token-bucket, scl-window-counters, scl-admission-decision, scl-tenant-fairness, dat-hot-key-mitigation, prd-fallback-hazards]
+    focus: "A shared limiter for an API fleet: algorithm choice against burst and accuracy needs, atomic counter updates in a shared store vs local approximate limits, the extra latency on every request, hot counters for big tenants, and fail-open vs fail-closed when the limiter store is down. Unguided variant: per-tenant quotas measured in cost units across regions."
+    sources:
+      - { ref: stripe-blog-rate-limiters, section: "Scaling your API with rate limiters", url: "https://stripe.com/blog/rate-limiters" }
+      - { ref: aws-builders-library, section: "Fairness in multi-tenant systems — Distributed admission control", url: "https://aws.amazon.com/builders-library/fairness-in-multi-tenant-systems/" }
+
+  - id: case-chat
+    file: chat.md
+    title: Design a chat and messaging service
+    prereqs: [scl-websockets, scl-pubsub, dst-broadcast, dst-idempotency, dst-consistency-models, dat-partitioning]
+    concepts: [scl-websocket-protocol, scl-stateful-connection-fleet, scl-pubsub-fanout, dst-broadcast-ordering, dst-idempotency-key, dst-session-guarantees, dat-range-vs-hash-partitioning]
+    focus: "One-to-one and group chat with delivery to online users and catch-up for offline ones: connection gateways and routing to the right gateway, per-conversation ordering via sequence numbers, client message ids for deduplication on retry, storage partitioned by conversation, read receipts and presence as lossy signals. Unguided variant: very large groups/channels where fan-out dominates."
+    sources:
+      - { ref: rfc6455, section: "§1.3 Opening Handshake; §5 Data Framing", url: "https://www.rfc-editor.org/rfc/rfc6455.html" }
+      - { ref: kleppmann-ds, section: "4.2 Delivery order in broadcast protocols" }
+
+  - id: case-news-feed
+    file: news-feed.md
+    title: Design a news feed
+    prereqs: [scl-pubsub, scl-cache-invalidation, dat-hot-keys, fnd-api-design, dst-consistency-models]
+    concepts: [scl-pubsub-fanout, dat-hot-key-mitigation, scl-cache-aside, scl-stale-set-race, fnd-cursor-pagination, dst-session-guarantees]
+    focus: "Fan-out on write (precomputed timelines) vs fan-out on read, and the hybrid for accounts with millions of followers; timeline caches, cursor pagination over a changing feed, and read-your-writes for the author's own post. Ranking is treated as a black box. Unguided variant: a feed with edits and deletions that must disappear quickly."
+    sources:
+      - { ref: primer, section: "Design the Twitter timeline and search — solution", url: "https://github.com/donnemartin/system-design-primer/blob/master/solutions/system_design/twitter/README.md" }
+      - { ref: memcache-fb, section: "§3 In a Cluster: Latency and Load" }
+
+  - id: case-file-storage
+    file: file-storage.md
+    title: Design a file storage and sharing service
+    prereqs: [dat-object-storage, dat-data-lifecycle, scl-cdn, dst-idempotency, prd-backup-recovery]
+    concepts: [dat-object-storage-model, dat-blob-metadata-split, dat-retention-tiering, dst-idempotency-key, scl-cdn-edge-caching, prd-rpo-rto]
+    focus: "Upload, store, download and share files: metadata database vs blob store, resumable chunked/multipart uploads with idempotent parts, presigned URLs so bytes bypass app servers, content-hash deduplication, CDN delivery for shared links, lifecycle tiering and the durability/RPO story. Unguided variant: desktop sync with conflicting offline edits."
+    sources:
+      - { ref: aws-s3-guide, section: "Download and upload objects with presigned URLs", url: "https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html" }
+      - { ref: gfs-paper, section: "§2.3 Architecture; §2.6 Metadata" }
+      - { ref: haystack-paper, section: "§3 Design & Implementation" }
+
+  - id: case-notification-platform
+    file: notification-platform.md
+    title: Design a notification platform
+    prereqs: [scl-job-scheduling, scl-rate-limiting, dst-delivery-semantics]
+    concepts: [scl-queue-ack-redelivery, scl-dead-letter-queue, dst-delivery-guarantees, dst-dedup-window, scl-timer-structures, scl-tenant-fairness, scl-token-bucket]
+    focus: "Accept notification requests from many internal teams and deliver via push, email and SMS: per-channel queues, at-least-once delivery with deduplication so users are not spammed, scheduled and quiet-hours delivery, per-user and per-provider rate limits, retries vs provider errors, and message TTL/replacement in Web Push. Unguided variant: a time-critical alerting product with strict latency targets."
+    sources:
+      - { ref: rfc8030, section: "§5.2 Push Message Time-To-Live; §5.3 Push Message Urgency; §5.4 Replacing Push Messages", url: "https://www.rfc-editor.org/rfc/rfc8030.html" }
+      - { ref: aws-sqs-guide, section: "Using dead-letter queues in Amazon SQS", url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html" }
+
+  - id: case-job-queue
+    file: job-queue.md
+    title: Design a distributed job queue and scheduler
+    prereqs: [scl-job-scheduling, scl-backpressure, dst-leases-fencing, dst-delivery-semantics]
+    concepts: [scl-queue-ack-redelivery, scl-poison-messages, scl-distributed-cron, dst-lease, dst-fencing-token, dst-effectively-once-processing, scl-bounded-queue]
+    focus: "Build the queue rather than use one: durable job storage, workers leasing jobs with heartbeats, redelivery after lease expiry and fencing so a zombie worker cannot commit, retries with backoff and dead-lettering, priorities and fairness, delayed and recurring jobs. Unguided variant: a workflow engine with multi-step jobs and dependencies."
+    sources:
+      - { ref: sre-book, section: "Ch. 24 Distributed Periodic Scheduling with Cron", url: "https://sre.google/sre-book/distributed-periodic-scheduling/" }
+      - { ref: aws-sqs-guide, section: "Amazon SQS visibility timeout", url: "https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html" }
+
+  - id: case-search-autocomplete
+    file: search-autocomplete.md
+    title: Design search with autocomplete
+    prereqs: [dat-search-indexes, scl-eviction-ttl, scl-cdn]
+    concepts: [dat-inverted-index, dat-near-real-time-search, fnd-percentile-latency, fnd-tail-amplification, scl-eviction-policy, dat-range-vs-hash-partitioning]
+    focus: "Product search over a large catalogue plus as-you-type suggestions under a tight latency budget: inverted index shards with scatter-gather and tail amplification, index freshness vs indexing cost, prefix structures (tries/edge n-grams) built offline from query logs, and aggressive caching of popular prefixes. Unguided variant: per-user personalised suggestions."
+    sources:
+      - { ref: elasticsearch-docs, section: "Search-as-you-type field type", url: "https://www.elastic.co/docs/reference/elasticsearch/mapping-reference/search-as-you-type" }
+      - { ref: cmu-15445, section: "Lecture 09 Indexes & Filters II — §4 Trie; §5 Inverted Index", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/09-indexes2.pdf" }
+      - { ref: tail-at-scale, section: "Component-Level Variability Amplified By Scale" }
+
+  - id: case-metrics-ingestion
+    file: metrics-ingestion.md
+    title: Design a metrics and log ingestion pipeline
+    prereqs: [scl-stream-processing, scl-backpressure, dat-column-storage, dat-data-lifecycle, prd-metrics]
+    concepts: [scl-partitioned-log, scl-consumer-offsets, scl-event-time-windowing, dat-columnar-storage, prd-metric-cardinality, scl-backpressure-signal, dat-retention-tiering]
+    focus: "Ingest millions of points per second from a fleet: agents with local buffering, a partitioned log as shock absorber, aggregation by event time with late data, time-series compression and columnar storage for logs, downsampling and retention tiers, and cardinality limits as the main cost control. Covers what happens when the pipeline itself is overloaded during an incident. Unguided variant: a security audit log that must never drop events."
+    sources:
+      - { ref: gorilla-paper, section: "§2.2 Gorilla requirements; §4.1 Time series compression" }
+      - { ref: prometheus-docs, section: "Storage", url: "https://prometheus.io/docs/prometheus/latest/storage/" }
+      - { ref: kafka-docs, section: "Design — Persistence; Efficiency", url: "https://kafka.apache.org/42/design/design/" }
+
+  - id: case-payments
+    file: payments.md
+    title: Design a payment system with correctness first
+    prereqs: [dst-transactional-outbox, dat-isolation-levels, prd-backup-recovery]
+    concepts: [dst-idempotency-key, dat-isolation-anomalies, dat-write-skew, dst-saga-pattern, dst-outbox-relay, dst-dual-write-problem, dst-delivery-guarantees, prd-rpo-rto]
+    focus: "Charging a customer through an external processor without double-charging or losing money: idempotency keys end to end, a double-entry ledger with invariants enforced by the database, payment state machines, timeouts with unknown outcome resolved by reconciliation, webhooks as at-least-once events, sagas for refunds, outbox for downstream events, and RPO zero. Unguided variant: seat reservation for events with holds that expire."
+    sources:
+      - { ref: stripe-blog-idempotency, section: "Designing robust and predictable APIs with idempotency", url: "https://stripe.com/blog/idempotency" }
+      - { ref: stripe-webhooks, section: "Receive Stripe events in your webhook endpoint (duplicate events; automatic retries)", url: "https://docs.stripe.com/webhooks" }
+      - { ref: microservices-io, section: "Pattern: Transactional outbox", url: "https://microservices.io/patterns/data/transactional-outbox.html" }
+
+labs:
+  - id: lab-kv-server
+    file: kv-server.md
+    title: Build a networked key-value server
+    lessons: [fnd-tcp-udp, fnd-io-models, fnd-serialization, fnd-rpc]
+    focus: "In C++: a TCP server speaking a length-prefixed request/response protocol, first blocking, then a non-blocking epoll/poll event loop with per-connection buffers; GET/SET/DEL over a hash table. Break it: partial reads/writes, a client that never reads, 10k idle connections, pipelined requests."
+    sources:
+      - { ref: byo-redis, section: "02. Socket Programming; 03. TCP Server and Client; 04. Request-Response Protocol", url: "https://build-your-own.org/redis/02_intro_sockets.html" }
+      - { ref: byo-redis, section: "06. Event Loop; 07. Key-Value Server; 08. Hashtables", url: "https://build-your-own.org/redis/06_event_loop_impl.html" }
+      - { ref: linux-man-pages, section: "epoll(7)", url: "https://man7.org/linux/man-pages/man7/epoll.7.html" }
+
+  - id: lab-cache
+    file: cache.md
+    title: Build an in-memory cache with eviction and TTL
+    lessons: [scl-eviction-ttl, scl-caching-patterns, fnd-locks-condvars]
+    focus: "Extend the KV server (or build standalone) with a memory limit, LRU eviction (hash map + intrusive list), and TTLs expired lazily on access plus actively via a min-heap; then make it thread-safe and measure lock contention with sharded locks. Break it: scan workloads that flush LRU, many keys with the same TTL."
+    sources:
+      - { ref: byo-redis, section: "12. Timer and Timeout; 13. Cache Expiration with TTL", url: "https://build-your-own.org/redis/13_heap.html" }
+      - { ref: redis-docs, section: "Key eviction — Approximated LRU algorithm", url: "https://redis.io/docs/latest/develop/reference/eviction/" }
+
+  - id: lab-thread-pool
+    file: thread-pool.md
+    title: Build a thread pool with a bounded work queue
+    lessons: [fnd-locks-condvars, fnd-concurrency-bugs, scl-backpressure, fnd-throughput-concurrency]
+    focus: "A fixed pool of worker threads consuming from a bounded queue built from a mutex and two condition variables; policies when full (block, reject, caller-runs); clean shutdown. Connect it to the event loop to offload slow commands. Break it: lost wake-ups, deadlock on shutdown, unbounded queue memory growth under overload."
+    sources:
+      - { ref: byo-redis, section: "14. Thread Pool", url: "https://build-your-own.org/redis/14_thread.html" }
+      - { ref: ostep, section: "Ch. 30 Condition Variables (producer/consumer)", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/threads-cv.pdf" }
+      - { ref: ostep, section: "Ch. 31 Semaphores", url: "https://pages.cs.wisc.edu/~remzi/OSTEP/threads-sema.pdf" }
+
+  - id: lab-wal-recovery
+    file: wal-recovery.md
+    title: Build a write-ahead log with crash recovery
+    lessons: [fnd-storage-durability, dat-write-ahead-log, dat-crash-recovery]
+    focus: "Make the KV store durable: append checksummed, length-prefixed records, fsync policy (every write vs group commit), replay on startup, detect and truncate a torn tail, and periodic snapshots/checkpoints to bound replay. Break it: kill -9 at random points, truncate the file mid-record, flip bytes, measure fsync cost."
+    sources:
+      - { ref: leveldb-docs, section: "log_format.md (records, checksums, FULL/FIRST/MIDDLE/LAST fragments)", url: "https://github.com/google/leveldb/blob/main/doc/log_format.md" }
+      - { ref: cmu-15445, section: "Lecture 21 Database Logging — §6 Write-Ahead Logging; §8 Checkpoints", url: "https://15445.courses.cs.cmu.edu/fall2025/notes/21-logging.pdf" }
+      - { ref: linux-man-pages, section: "fsync(2)", url: "https://man7.org/linux/man-pages/man2/fsync.2.html" }
+
+  - id: lab-rate-limiter
+    file: rate-limiter.md
+    title: Build a rate limiter
+    lessons: [scl-rate-limiting, scl-admission-control, dst-physical-clocks]
+    focus: "Implement token bucket and sliding-window counters as a library using a monotonic clock, then as a command in the KV server so several processes share limits atomically. Break it: clock jumps with a wall clock, bursts at window boundaries, the limiter store going down (fail open vs closed), memory per key under many distinct keys."
+    sources:
+      - { ref: stripe-blog-rate-limiters, section: "Scaling your API with rate limiters", url: "https://stripe.com/blog/rate-limiters" }
+      - { ref: systems-approach, section: "6.5 Quality of Service (token bucket filter)", url: "https://book.systemsapproach.org/congestion/qos.html" }
+
+  - id: lab-perf-failure
+    file: perf-failure.md
+    title: Measure performance and test failure behaviour
+    lessons: [fnd-latency-percentiles, fnd-throughput-concurrency, fnd-bottlenecks-utilization, prd-reliability-testing, prd-timeouts, prd-retries]
+    focus: "Benchmark your own server with an open-loop load generator, record latency histograms (p50–p99.9), find the knee of the throughput/latency curve and the saturated resource, then inject failures: added latency, dropped connections, a stalled dependency; compare behaviour with and without timeouts, jittered retries and a bounded queue."
+    sources:
+      - { ref: wrk2, section: "README — Coordinated Omission", url: "https://github.com/giltene/wrk2" }
+      - { ref: use-method, section: "The USE Method" }
+      - { ref: sre-book, section: "Ch. 17 Testing for Reliability — Stress test", url: "https://sre.google/sre-book/testing-reliability/" }
