@@ -35,3 +35,338 @@ tail-at-scale:
   title: "The Tail at Scale (Dean & Barroso, CACM 56(2), 2013)"
   url: https://research.google/pubs/the-tail-at-scale/
   license: Published paper; linked, not redistributed
+
+# ── Added by the curriculum plan (verified 2026-11-14; see docs/SOURCES.md) ──
+sre-workbook:
+  title: "The Site Reliability Workbook (Google, 2018)"
+  url: https://sre.google/workbook/table-of-contents/
+  license: CC BY-NC-ND 4.0; linked, not redistributed
+brooker-littles-law:
+  title: "Telling Stories About Little's Law (Marc Brooker, 2018)"
+  url: https://brooker.co.za/blog/2018/06/20/littles-law.html
+  license: Author's blog; linked, not redistributed
+use-method:
+  title: "The USE Method (Brendan Gregg)"
+  url: https://www.brendangregg.com/usemethod.html
+  license: Author's site; linked, not redistributed
+linux-man-pages:
+  title: "Linux man-pages project (man7.org)"
+  url: https://man7.org/linux/man-pages/
+  license: Per-page licences (mostly permissive); linked, not redistributed
+aws-builders-library:
+  title: "Amazon Builders' Library (AWS)"
+  url: https://aws.amazon.com/builders-library/
+  license: "© Amazon Web Services; linked, not redistributed"
+aws-well-architected:
+  title: "AWS Well-Architected Framework (Reliability and Cost Optimization pillars)"
+  url: https://docs.aws.amazon.com/wellarchitected/latest/framework/welcome.html
+  license: "© Amazon Web Services; linked, not redistributed"
+aws-s3-guide:
+  title: "Amazon S3 User Guide"
+  url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html
+  license: "© Amazon Web Services; linked, not redistributed"
+aws-sqs-guide:
+  title: "Amazon SQS Developer Guide"
+  url: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html
+  license: "© Amazon Web Services; linked, not redistributed"
+aws-dynamodb-guide:
+  title: "Amazon DynamoDB Developer Guide"
+  url: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html
+  license: "© Amazon Web Services; linked, not redistributed"
+rfc1034:
+  title: "RFC 1034: Domain Names — Concepts and Facilities"
+  url: https://www.rfc-editor.org/rfc/rfc1034.html
+  license: IETF; linked, not redistributed
+rfc9293:
+  title: "RFC 9293: Transmission Control Protocol (TCP)"
+  url: https://www.rfc-editor.org/rfc/rfc9293.html
+  license: IETF Trust; linked, not redistributed
+rfc9110:
+  title: "RFC 9110: HTTP Semantics"
+  url: https://www.rfc-editor.org/rfc/rfc9110.html
+  license: IETF Trust; linked, not redistributed
+rfc9111:
+  title: "RFC 9111: HTTP Caching"
+  url: https://www.rfc-editor.org/rfc/rfc9111.html
+  license: IETF Trust; linked, not redistributed
+rfc9112:
+  title: "RFC 9112: HTTP/1.1"
+  url: https://www.rfc-editor.org/rfc/rfc9112.html
+  license: IETF Trust; linked, not redistributed
+rfc9113:
+  title: "RFC 9113: HTTP/2"
+  url: https://www.rfc-editor.org/rfc/rfc9113.html
+  license: IETF Trust; linked, not redistributed
+rfc9000:
+  title: "RFC 9000: QUIC — A UDP-Based Multiplexed and Secure Transport"
+  url: https://www.rfc-editor.org/rfc/rfc9000.html
+  license: IETF Trust; linked, not redistributed
+rfc8446:
+  title: "RFC 8446: The Transport Layer Security (TLS) Protocol Version 1.3"
+  url: https://www.rfc-editor.org/rfc/rfc8446.html
+  license: IETF Trust; linked, not redistributed
+rfc6455:
+  title: "RFC 6455: The WebSocket Protocol"
+  url: https://www.rfc-editor.org/rfc/rfc6455.html
+  license: IETF Trust; linked, not redistributed
+rfc6202:
+  title: "RFC 6202: Known Issues and Best Practices for the Use of Long Polling and Streaming in Bidirectional HTTP"
+  url: https://www.rfc-editor.org/rfc/rfc6202.html
+  license: IETF Trust; linked, not redistributed
+rfc6585:
+  title: "RFC 6585: Additional HTTP Status Codes (429 Too Many Requests)"
+  url: https://www.rfc-editor.org/rfc/rfc6585.html
+  license: IETF Trust; linked, not redistributed
+rfc6749:
+  title: "RFC 6749: The OAuth 2.0 Authorization Framework"
+  url: https://www.rfc-editor.org/rfc/rfc6749.html
+  license: IETF Trust; linked, not redistributed
+rfc7519:
+  title: "RFC 7519: JSON Web Token (JWT)"
+  url: https://www.rfc-editor.org/rfc/rfc7519.html
+  license: IETF Trust; linked, not redistributed
+rfc8030:
+  title: "RFC 8030: Generic Event Delivery Using HTTP Push (Web Push)"
+  url: https://www.rfc-editor.org/rfc/rfc8030.html
+  license: IETF Trust; linked, not redistributed
+whatwg-sse:
+  title: "WHATWG HTML Living Standard §9.2 Server-sent events"
+  url: https://html.spec.whatwg.org/multipage/server-sent-events.html
+  license: CC BY 4.0 (WHATWG); linked
+grpc-docs:
+  title: "gRPC documentation"
+  url: https://grpc.io/docs/
+  license: Project documentation; linked, not redistributed
+protobuf-docs:
+  title: "Protocol Buffers documentation"
+  url: https://protobuf.dev/
+  license: Project documentation; linked, not redistributed
+google-aip:
+  title: "Google API Improvement Proposals (AIP)"
+  url: https://google.aip.dev/
+  license: Project documentation; linked, not redistributed
+postgres-docs:
+  title: "PostgreSQL 18 Documentation"
+  url: https://www.postgresql.org/docs/current/
+  license: PostgreSQL License; linked, not redistributed
+redis-docs:
+  title: "Redis documentation"
+  url: https://redis.io/docs/latest/
+  license: Vendor documentation; linked, not redistributed
+kafka-docs:
+  title: "Apache Kafka documentation (4.2)"
+  url: https://kafka.apache.org/documentation/
+  license: Apache Software Foundation documentation; linked, not redistributed
+elasticsearch-docs:
+  title: "Elasticsearch documentation (Elastic Docs)"
+  url: https://www.elastic.co/docs/
+  license: Vendor documentation; linked, not redistributed
+lucene-docs:
+  title: "Apache Lucene 10.3 index file format documentation"
+  url: https://lucene.apache.org/core/10_3_0/core/org/apache/lucene/codecs/lucene103/package-summary.html
+  license: Apache Software Foundation documentation; linked, not redistributed
+leveldb-docs:
+  title: "LevelDB implementation notes (impl.md, log_format.md)"
+  url: https://github.com/google/leveldb/tree/main/doc
+  license: BSD-3-Clause repository; linked
+debezium-docs:
+  title: "Debezium documentation — Outbox Event Router"
+  url: https://debezium.io/documentation/reference/stable/transformations/outbox-event-router.html
+  license: Project documentation; linked, not redistributed
+kubernetes-docs:
+  title: "Kubernetes documentation — Services"
+  url: https://kubernetes.io/docs/concepts/services-networking/service/
+  license: CC BY 4.0; linked
+prometheus-docs:
+  title: "Prometheus documentation"
+  url: https://prometheus.io/docs/
+  license: Project documentation; linked, not redistributed
+opentelemetry-docs:
+  title: "OpenTelemetry documentation — Concepts"
+  url: https://opentelemetry.io/docs/concepts/
+  license: Project documentation; linked, not redistributed
+stripe-idempotency:
+  title: "Stripe API reference — Idempotent requests"
+  url: https://docs.stripe.com/api/idempotent_requests
+  license: "© Stripe; linked, not redistributed"
+stripe-webhooks:
+  title: "Stripe docs — Receive Stripe events in your webhook endpoint"
+  url: https://docs.stripe.com/webhooks
+  license: "© Stripe; linked, not redistributed"
+stripe-blog-idempotency:
+  title: "Designing robust and predictable APIs with idempotency (Stripe blog, Brandur Leach)"
+  url: https://stripe.com/blog/idempotency
+  license: "© Stripe; linked, not redistributed"
+stripe-blog-rate-limiters:
+  title: "Scaling your API with rate limiters (Stripe blog, Paul Tarjan)"
+  url: https://stripe.com/blog/rate-limiters
+  license: "© Stripe; linked, not redistributed"
+stripe-blog-online-migrations:
+  title: "Online migrations at scale (Stripe blog, Jacqueline Xu)"
+  url: https://stripe.com/blog/online-migrations
+  license: "© Stripe; linked, not redistributed"
+owasp-cheatsheets:
+  title: "OWASP Cheat Sheet Series"
+  url: https://cheatsheetseries.owasp.org/
+  license: CC BY-SA 4.0; linked, not redistributed
+owasp-api-top10:
+  title: "OWASP API Security Top 10 (2023)"
+  url: https://owasp.org/API-Security/editions/2023/en/0x11-t10/
+  license: CC BY-SA 4.0; linked, not redistributed
+microservices-io:
+  title: "Microservice Architecture patterns (Chris Richardson, microservices.io)"
+  url: https://microservices.io/patterns/
+  license: "© Chris Richardson; linked, not redistributed"
+fowler-microservices:
+  title: "Microservices (James Lewis & Martin Fowler, 2014)"
+  url: https://martinfowler.com/articles/microservices.html
+  license: "© the authors; linked, not redistributed"
+fowler-monolith-first:
+  title: "MonolithFirst (Martin Fowler, bliki)"
+  url: https://martinfowler.com/bliki/MonolithFirst.html
+  license: "© Martin Fowler; linked, not redistributed"
+fowler-microservice-premium:
+  title: "MicroservicePremium (Martin Fowler, bliki)"
+  url: https://martinfowler.com/bliki/MicroservicePremium.html
+  license: "© Martin Fowler; linked, not redistributed"
+fowler-parallel-change:
+  title: "ParallelChange (Danilo Sato, martinfowler.com bliki)"
+  url: https://martinfowler.com/bliki/ParallelChange.html
+  license: "© the author; linked, not redistributed"
+fowler-utility-strategic:
+  title: "UtilityVsStrategicDichotomy (Martin Fowler, bliki)"
+  url: https://martinfowler.com/bliki/UtilityVsStrategicDichotomy.html
+  license: "© Martin Fowler; linked, not redistributed"
+fowler-circuit-breaker:
+  title: "CircuitBreaker (Martin Fowler, bliki)"
+  url: https://martinfowler.com/bliki/CircuitBreaker.html
+  license: "© Martin Fowler; linked, not redistributed"
+jepsen-consistency:
+  title: "Jepsen — Consistency Models"
+  url: https://jepsen.io/consistency
+  license: "© Jepsen; linked, not redistributed"
+kleppmann-locking:
+  title: "How to do distributed locking (Martin Kleppmann, 2016)"
+  url: https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html
+  license: "© Martin Kleppmann; linked, not redistributed"
+principles-of-chaos:
+  title: "Principles of Chaos Engineering"
+  url: https://principlesofchaos.org/
+  license: Community document; linked, not redistributed
+wrk2:
+  title: "wrk2: a constant-throughput, correct-latency-recording variant of wrk (Gil Tene)"
+  url: https://github.com/giltene/wrk2
+  license: Apache-2.0 repository; linked
+# Papers
+dynamo-paper:
+  title: "Dynamo: Amazon's Highly Available Key-value Store (DeCandia et al., SOSP 2007)"
+  url: https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf
+  license: Published paper; linked, not redistributed
+bigtable-paper:
+  title: "Bigtable: A Distributed Storage System for Structured Data (Chang et al., OSDI 2006)"
+  url: https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf
+  license: Published paper; linked, not redistributed
+gfs-paper:
+  title: "The Google File System (Ghemawat, Gobioff, Leung, SOSP 2003)"
+  url: https://pdos.csail.mit.edu/6.5840/papers/gfs.pdf
+  license: Published paper; linked, not redistributed
+mapreduce-paper:
+  title: "MapReduce: Simplified Data Processing on Large Clusters (Dean & Ghemawat, OSDI 2004)"
+  url: https://pdos.csail.mit.edu/6.5840/papers/mapreduce.pdf
+  license: Published paper; linked, not redistributed
+haystack-paper:
+  title: "Finding a needle in Haystack: Facebook's photo storage (Beaver et al., OSDI 2010)"
+  url: https://www.usenix.org/legacy/event/osdi10/tech/full_papers/Beaver.pdf
+  license: Published paper; linked, not redistributed
+kafka-paper:
+  title: "Kafka: a Distributed Messaging System for Log Processing (Kreps, Narkhede, Rao, NetDB 2011)"
+  url: https://notes.stephenholiday.com/Kafka.pdf
+  license: Published paper (third-party mirror); linked, not redistributed
+lsm-tree-paper:
+  title: "The Log-Structured Merge-Tree (LSM-Tree) (O'Neil et al., Acta Informatica 1996)"
+  url: https://www.cs.umb.edu/~poneil/lsmtree.pdf
+  license: Published paper; linked, not redistributed
+berenson-isolation:
+  title: "A Critique of ANSI SQL Isolation Levels (Berenson et al., SIGMOD 1995)"
+  url: https://arxiv.org/abs/cs/0701157
+  license: Published paper (arXiv); linked, not redistributed
+karger-consistent-hashing:
+  title: "Consistent Hashing and Random Trees (Karger et al., STOC 1997)"
+  url: https://www.cs.princeton.edu/courses/archive/fall09/cos518/papers/chash.pdf
+  license: Published paper; linked, not redistributed
+jump-hash:
+  title: "A Fast, Minimal Memory, Consistent Hash Algorithm (Lamping & Veach, 2014)"
+  url: https://arxiv.org/abs/1406.2294
+  license: arXiv preprint; linked, not redistributed
+lamport-clocks:
+  title: "Time, Clocks, and the Ordering of Events in a Distributed System (Lamport, CACM 1978)"
+  url: https://lamport.azurewebsites.net/pubs/time-clocks.pdf
+  license: Published paper; linked, not redistributed
+herlihy-wing:
+  title: "Linearizability: A Correctness Condition for Concurrent Objects (Herlihy & Wing, TOPLAS 1990)"
+  url: https://pdos.csail.mit.edu/6.5840/papers/p463-herlihy.pdf
+  license: Published paper; linked, not redistributed
+gilbert-lynch-cap:
+  title: "Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services (Gilbert & Lynch, SIGACT News 2002)"
+  url: https://www.comp.nus.edu.sg/~gilbert/pubs/BrewersConjecture-SigAct.pdf
+  license: Published paper (author copy); linked, not redistributed
+brewer-cap-12-years:
+  title: "CAP Twelve Years Later: How the \"Rules\" Have Changed (Eric Brewer, 2012)"
+  url: https://www.infoq.com/articles/cap-twelve-years-later-how-the-rules-have-changed/
+  license: Article (InfoQ reprint of IEEE Computer); linked, not redistributed
+kleppmann-cap-critique:
+  title: "A Critique of the CAP Theorem (Martin Kleppmann, 2015)"
+  url: https://arxiv.org/abs/1509.05393
+  license: arXiv preprint; linked, not redistributed
+abadi-pacelc:
+  title: "Consistency Tradeoffs in Modern Distributed Database System Design (Abadi, IEEE Computer 2012)"
+  url: https://www.cs.umd.edu/~abadi/papers/abadi-pacelc.pdf
+  license: Published article; linked, not redistributed
+paxos-simple:
+  title: "Paxos Made Simple (Lamport, 2001)"
+  url: https://pdos.csail.mit.edu/6.5840/papers/paxos-simple.pdf
+  license: Published paper; linked, not redistributed
+raft-paper:
+  title: "In Search of an Understandable Consensus Algorithm (Extended Version) (Ongaro & Ousterhout)"
+  url: https://pdos.csail.mit.edu/6.5840/papers/raft-extended.pdf
+  license: Published paper; linked, not redistributed
+zookeeper-paper:
+  title: "ZooKeeper: Wait-free coordination for Internet-scale systems (Hunt et al., USENIX ATC 2010)"
+  url: https://pdos.csail.mit.edu/6.5840/papers/zookeeper.pdf
+  license: Published paper; linked, not redistributed
+chubby-paper:
+  title: "The Chubby lock service for loosely-coupled distributed systems (Burrows, OSDI 2006)"
+  url: https://static.googleusercontent.com/media/research.google.com/en//archive/chubby-osdi06.pdf
+  license: Published paper; linked, not redistributed
+chain-replication-paper:
+  title: "Chain Replication for Supporting High Throughput and Availability (van Renesse & Schneider, OSDI 2004)"
+  url: https://pdos.csail.mit.edu/6.5840/papers/cr-osdi04.pdf
+  license: Published paper; linked, not redistributed
+spanner-paper:
+  title: "Spanner: Google's Globally-Distributed Database (Corbett et al., OSDI 2012)"
+  url: https://pdos.csail.mit.edu/6.5840/papers/spanner.pdf
+  license: Published paper; linked, not redistributed
+memcache-fb:
+  title: "Scaling Memcache at Facebook (Nishtala et al., NSDI 2013)"
+  url: https://pdos.csail.mit.edu/6.5840/papers/memcache-fb.pdf
+  license: Published paper; linked, not redistributed
+sagas-paper:
+  title: "Sagas (Garcia-Molina & Salem, SIGMOD 1987; Princeton TR-070-87)"
+  url: https://www.cs.princeton.edu/research/techreps/598
+  license: Published paper; linked, not redistributed
+cache-stampede-paper:
+  title: "Optimal Probabilistic Cache Stampede Prevention (Vattani, Chierichetti, Lowenstein, VLDB 2015)"
+  url: https://cseweb.ucsd.edu/~avattani/papers/cache_stampede.pdf
+  license: Published paper; linked, not redistributed
+dataflow-paper:
+  title: "The Dataflow Model (Akidau et al., VLDB 2015)"
+  url: https://www.vldb.org/pvldb/vol8/p1792-Akidau.pdf
+  license: Published paper; linked, not redistributed
+dapper-paper:
+  title: "Dapper, a Large-Scale Distributed Systems Tracing Infrastructure (Sigelman et al., Google 2010)"
+  url: https://static.googleusercontent.com/media/research.google.com/en//archive/papers/dapper-2010-1.pdf
+  license: Technical report; linked, not redistributed
+gorilla-paper:
+  title: "Gorilla: A Fast, Scalable, In-Memory Time Series Database (Pelkonen et al., VLDB 2015)"
+  url: https://www.vldb.org/pvldb/vol8/p1816-teller.pdf
+  license: Published paper; linked, not redistributed
