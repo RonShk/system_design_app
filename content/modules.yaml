@@ -1,0 +1,15 @@
+- id: foundations
+  title: Foundations
+  summary: Requirements, performance vocabulary, estimation, the operating-system and network machinery every design sits on, and API design.
+- id: data
+  title: Data systems
+  summary: How databases store, index, and protect data on one machine, then how replication and partitioning spread it across many.
+- id: distributed
+  title: Distributed correctness
+  summary: What can go wrong when machines only communicate by unreliable messages, and the models and protocols used to stay correct anyway.
+- id: scaling
+  title: Scaling and communication
+  summary: Load balancing, caching, edge delivery, asynchronous messaging, real-time delivery, and protecting systems from overload.
+- id: production
+  title: Production engineering
+  summary: Running systems reliably — objectives, observability, resilience patterns, recovery, safe change, security, and architectural judgement.

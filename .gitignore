@@ -1,7 +1,7 @@
 node_modules/
 dist/
-dev-dist/
-src/generated/
+
+
 .DS_Store
 *.log
 .env
@@ -9,4 +9,9 @@ src/generated/
 .claude/
 test-results/
 playwright-report/
-.vapid-private*
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.build/
+.swiftpm/
