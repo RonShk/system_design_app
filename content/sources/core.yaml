@@ -1,0 +1,37 @@
+# Source registry. Lessons cite `ref` + a specific `section` (chapter, section number or heading).
+primer:
+  title: "The System Design Primer (Donne Martin)"
+  url: https://github.com/donnemartin/system-design-primer
+  license: CC BY 4.0
+kleppmann-ds:
+  title: "Distributed Systems lecture notes (Martin Kleppmann, Cambridge 2020/21)"
+  url: https://www.cl.cam.ac.uk/teaching/2021/ConcDisSys/dist-sys-notes.pdf
+  license: CC BY-SA
+ostep:
+  title: "Operating Systems: Three Easy Pieces (Arpaci-Dusseau), v1.10"
+  url: https://pages.cs.wisc.edu/~remzi/OSTEP/
+  license: Free PDF chapters; linked, not redistributed
+systems-approach:
+  title: "Computer Networks: A Systems Approach, 6th ed. (Peterson & Davie)"
+  url: https://book.systemsapproach.org/
+  license: CC BY 4.0
+cmu-15445:
+  title: "CMU 15-445/645 Database Systems, Fall 2025 lecture notes"
+  url: https://15445.courses.cs.cmu.edu/fall2025/schedule.html
+  license: Course material; linked, not redistributed
+sre-book:
+  title: "Site Reliability Engineering (Google, 2016)"
+  url: https://sre.google/sre-book/table-of-contents/
+  license: CC BY-NC-ND 4.0; linked, not redistributed
+mit-6-5840:
+  title: "MIT 6.5840 Distributed Systems schedule and papers"
+  url: https://pdos.csail.mit.edu/6.5840/schedule.html
+  license: Course material; linked, not redistributed
+byo-redis:
+  title: "Build Your Own Redis with C/C++ (James Smith)"
+  url: https://build-your-own.org/redis/
+  license: Free web version; linked, not redistributed
+tail-at-scale:
+  title: "The Tail at Scale (Dean & Barroso, CACM 56(2), 2013)"
+  url: https://research.google/pubs/the-tail-at-scale/
+  license: Published paper; linked, not redistributed
