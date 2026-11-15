@@ -1,0 +1,16 @@
+{
+  "name": "system-design-trainer-content",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Content pipeline for the System Design Trainer iOS app",
+  "scripts": {
+    "content": "node scripts/build-content.mjs",
+    "content:strict": "node scripts/build-content.mjs --strict --report",
+    "test": "node --test tests/content/"
+  },
+  "devDependencies": {
+    "js-yaml": "^4.1.0",
+    "marked": "^15.0.0"
+  }
+}
