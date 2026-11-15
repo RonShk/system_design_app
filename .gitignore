@@ -1,0 +1,12 @@
+node_modules/
+dist/
+dev-dist/
+src/generated/
+.DS_Store
+*.log
+.env
+.env.*
+.claude/
+test-results/
+playwright-report/
+.vapid-private*
