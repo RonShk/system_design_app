@@ -42,7 +42,7 @@ public enum AssessmentComposer {
         let today = clock.today
         let eligible = catalog.orderedConcepts.filter { c in
             guard let last = history.lastAttempt[c.id] else { return false }
-            return today.days(since: clock.day(of: last)) >= Progress.retentionGapDays
+            return today.days(since: clock.day(of: last)) >= Mastery.retentionGapDays
         }.sorted { (history.lastAttempt[$0.id] ?? .distantPast) < (history.lastAttempt[$1.id] ?? .distantPast) }
         var ids: [String] = []
         for c in eligible where ids.count < count {

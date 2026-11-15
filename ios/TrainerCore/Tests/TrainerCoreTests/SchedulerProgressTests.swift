@@ -192,7 +192,7 @@ final class ProgressTests: XCTestCase {
     let catalog = Fixture.catalog()
     let c = "m0-l0-c0"
 
-    private func status(_ s: AppState, _ t: TestClock) -> ConceptStatus { Progress.status(of: c, state: s, clock: t.clock) }
+    private func status(_ s: AppState, _ t: TestClock) -> ConceptStatus { Mastery.status(of: c, state: s, clock: t.clock) }
 
     func testStatesFromNotStartedToPracticed() {
         let t = TestClock()
@@ -314,8 +314,8 @@ final class ProgressTests: XCTestCase {
         Engine.completeLesson("m0-l0", state: &s, catalog: catalog, clock: t.clock)
         Fixture.answer("\(c)-p1", state: &s, catalog: catalog, clock: t.clock)
         Fixture.answer("\(c)-p2", state: &s, catalog: catalog, clock: t.clock)
-        let statuses = Progress.allStatuses(state: s, catalog: catalog, clock: t.clock)
-        let sum = Progress.summary(of: catalog.concepts(in: "m0"), statuses: statuses)
+        let statuses = Mastery.allStatuses(state: s, catalog: catalog, clock: t.clock)
+        let sum = Mastery.summary(of: catalog.concepts(in: "m0"), statuses: statuses)
         XCTAssertEqual(sum.total, 6)
         XCTAssertEqual(sum.covered, 2)
         XCTAssertEqual(sum.demonstrated, 1)
@@ -329,10 +329,10 @@ final class ProgressTests: XCTestCase {
         Fixture.answer("\(c)-p1", confidence: .high, state: &s, catalog: catalog, clock: t.clock)
         Fixture.answer("\(c)-p2", correct: false, confidence: .high, state: &s, catalog: catalog, clock: t.clock)
         Fixture.answer("\(c)-p3", correct: false, confidence: .low, state: &s, catalog: catalog, clock: t.clock)
-        let cal = Progress.calibration(state: s)
+        let cal = Mastery.calibration(state: s)
         XCTAssertEqual(cal[.high]?.rate, 0.5)
         XCTAssertEqual(cal[.low]?.rate, 0)
-        let weak = Progress.weakConcepts(statuses: Progress.allStatuses(state: s, catalog: catalog, clock: t.clock), state: s, catalog: catalog, limit: 5)
+        let weak = Mastery.weakConcepts(statuses: Mastery.allStatuses(state: s, catalog: catalog, clock: t.clock), state: s, catalog: catalog, limit: 5)
         XCTAssertEqual(weak, [c])
     }
 }

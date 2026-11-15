@@ -153,7 +153,7 @@ final class PersistenceTests: XCTestCase {
         // Unknown ids are ignored by composition instead of crashing it.
         XCTAssertFalse(Scheduler.dueConcepts(state: loaded, catalog: catalog, clock: t.clock).contains("deleted-concept"))
         _ = SessionComposer.compose(state: loaded, catalog: catalog, clock: t.clock, minutes: 15)
-        _ = Progress.allStatuses(state: loaded, catalog: catalog, clock: t.clock)
+        _ = Mastery.allStatuses(state: loaded, catalog: catalog, clock: t.clock)
     }
 
     // Export / import

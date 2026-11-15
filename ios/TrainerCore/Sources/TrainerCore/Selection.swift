@@ -68,7 +68,7 @@ public enum ItemSelector {
     public static func reviewItem(concept: String, state: AppState, catalog: Catalog, history: History,
                                   clock: Clock, exclude: Set<String> = []) -> (item: ItemMeta, context: AttemptContext)? {
         let step = state.concepts[concept]?.step ?? 0
-        if Scheduler.interval(step: step) >= Progress.retentionGapDays,
+        if Scheduler.interval(step: step) >= Mastery.retentionGapDays,
            let it = pick(concept: concept, pools: [.assess], catalog: catalog, history: history, exclude: exclude) {
             let seen = history.lastSeen[it.id]
             let stale = seen.map { clock.today.days(since: clock.day(of: $0)) >= 30 } ?? true

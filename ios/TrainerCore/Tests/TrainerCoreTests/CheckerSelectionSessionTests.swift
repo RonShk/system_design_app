@@ -215,7 +215,7 @@ final class SessionTests: XCTestCase {
         }
 
         try runSession()   // day 0: lesson + practice
-        XCTAssertEqual(Progress.status(of: c, state: s, clock: t.clock).state, .demonstrated)
+        XCTAssertEqual(Mastery.status(of: c, state: s, clock: t.clock).state, .demonstrated)
         XCTAssertEqual(s.concepts[c]?.step, 0, "same-day practice does not advance the schedule")
         let recap = SessionComposer.recap(session: s.session!, state: s, catalog: catalog, clock: t.clock)
         XCTAssertEqual(recap.answered, 4)
@@ -223,14 +223,14 @@ final class SessionTests: XCTestCase {
         XCTAssertEqual(recap.dueTomorrow, 2)
 
         var contexts: [AttemptContext] = []
-        for _ in 0..<12 where Progress.status(of: c, state: s, clock: t.clock).state != .retained {
+        for _ in 0..<12 where Mastery.status(of: c, state: s, clock: t.clock).state != .retained {
             let due = s.concepts[c]!.dueDay!
             t.advance(days: Double(max(1, due.days(since: t.clock.today))))
             XCTAssertTrue(Scheduler.dueConcepts(state: s, catalog: catalog, clock: t.clock).contains(c))
             try runSession()
             contexts.append(contentsOf: s.attempts.filter { $0.primaryConcept == c && t.clock.day(of: $0.date) == t.clock.today }.map(\.context))
         }
-        let status = Progress.status(of: c, state: s, clock: t.clock)
+        let status = Mastery.status(of: c, state: s, clock: t.clock)
         XCTAssertEqual(status.state, .retained)
         XCTAssertTrue(contexts.contains(.delayedCheck), "retention was shown on an assessment item that practice never used")
         XCTAssertGreaterThanOrEqual(s.concepts[c]!.step, 3)
